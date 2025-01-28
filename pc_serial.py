@@ -1,6 +1,6 @@
 import serial
 
-ser = serial.Serial('COM19', 9600)  # open serial port
+ser = serial.Serial('COM21', 9600)  # open serial port
 ser.write(b"Hello I am PC!\n")     # write a string
 
 msg = ser.readline().strip().decode("utf-8").split(',')
