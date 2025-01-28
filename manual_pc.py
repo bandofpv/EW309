@@ -20,10 +20,6 @@ def on_press(key):
     elif key == keyboard.Key.space:
         print('Space button pressed')
         ser.write(b"SPACE\n")
-    else:
-        ser.write(b"SPACE\n")
 
-while True:
-    keyboard.press("a")
-    with keyboard.Listener(on_press=on_press) as listener:
-        listener.join()
+with keyboard.Listener(on_press=on_press) as listener:
+    listener.join()
