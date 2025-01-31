@@ -1,3 +1,5 @@
+# manual_pico.py
+
 from motor import Motor
 import ttyacm
 
@@ -13,14 +15,14 @@ const_speed = 0.6  # set motor duty cycle speed
 while True:
     data = tty.readline()
     print(data)
-    if data == "UP":
+    if data == "UP":  # move pitch motor up
         pitch_motor.move(const_speed)
-    elif data == "DOWN":
+    elif data == "DOWN":  # move pitch motor down
         pitch_motor.move(-const_speed)
-    elif data == "RIGHT":
+    elif data == "RIGHT":  # move yaw motor right
         yaw_motor.move(const_speed)
-    elif data == "LEFT":
+    elif data == "LEFT":  # move yaw motor left
         yaw_motor.move(-const_speed)
-    elif data == "SPACE":
+    elif data == "SPACE":  # stop all motors
         pitch_motor.move(0)
         yaw_motor.move(0)
