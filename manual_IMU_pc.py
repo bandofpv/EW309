@@ -1,3 +1,5 @@
+# manual_IMU_pc.py
+
 import time
 import serial
 import keyboard

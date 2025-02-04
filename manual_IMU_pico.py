@@ -1,3 +1,5 @@
+# manual_IMU_pico.py
+
 import time
 import ttyacm
 import _thread
