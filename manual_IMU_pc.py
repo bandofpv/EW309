@@ -7,20 +7,20 @@ import threading
 import numpy as np
 import matplotlib.pyplot as plt
 
-ser = serial.Serial('COM21', 9600)  # open serial DATA port
+ser = serial.Serial('COM19', 9600)  # open serial DATA port
 
-sampling_rate = 10;  # Hz
+sampling_rate = 10;  # qHz
 yaw_data = [];
 pitch_data = [];
 
 # Decode serial data and append to yaw_data & pitch_data
-def read_serial(stop_event):
+def read_serial   (stop_event):
     while not stop_event.is_set():
         data = ser.readline().strip().decode("utf-8").split(',')
         yaw_data.append(float(data[0]))
         pitch_data.append(float(data[1]))
-        print(f"RECEIVED: Yaw: {data[0]} Pitch: {data[1]}")
-        
+        print(f"RECEIVED: Yaw: {float(data[0])} Pitch: {data[1]}")
+
 # Start read_serial on seperate thread
 stop_event = threading.Event()
 serial_thread = threading.Thread(target=read_serial, args=(stop_event,))

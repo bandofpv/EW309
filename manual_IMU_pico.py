@@ -1,5 +1,4 @@
 # manual_IMU_pico.py
-
 import time
 import ttyacm
 import _thread
@@ -25,15 +24,24 @@ def read_serial():
     while True:
         data = tty.readline().strip()
         
+def wrap2pi(ang):
+    while ang > 180.0:
+        ang = ang - 360.0
+    while ang < -180.0:
+        ang = ang + 360.0
+    return ang
+    
 # Start the reading serial on seperate thread
 _thread.start_new_thread(read_serial, ())
   
+# Will is needs more RAM.
+time.sleep(5)
 # Move motor based on serial keyboard signals
 while True:
     # Read imu data and send through serial port
     yaw, pitch, roll = imu.euler()
-    print(f"Yaw: {yaw} Pitch: {pitch}")
-    tty.print(f"{yaw},{pitch}")
+    print(f"Yaw: {wrap2pi(yaw)} Pitch: {pitch}")
+    tty.print(f"{wrap2pi(yaw)},{pitch}")
     
     # Check if serial data was recieved and control motors
     if data:
