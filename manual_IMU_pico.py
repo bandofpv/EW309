@@ -1,4 +1,5 @@
 # manual_IMU_pico.py
+
 import time
 import ttyacm
 import _thread
@@ -6,7 +7,7 @@ from bno055 import *
 from motor import Motor
 
 tty = ttyacm.open(1)  # open serial DATA port
-sampling_rate = 10  # Hz
+sampling_rate = 100  # Hz
 
 # Define SCL & SDA pins for BNO055 IMU
 i2c1 = machine.I2C(1, scl=machine.Pin(3), sda=machine.Pin(2))
@@ -34,8 +35,12 @@ def wrap2pi(ang):
 # Start the reading serial on seperate thread
 _thread.start_new_thread(read_serial, ())
   
-# Will is needs more RAM.
-time.sleep(5)
+# Wait for user to start sending keyboard commands
+while True:
+    if data:
+        break
+    time.sleep(0.5)  # Sleep for a short time to avoid busy-waiting
+    
 # Move motor based on serial keyboard signals
 while True:
     # Read imu data and send through serial port

@@ -3,7 +3,7 @@
 from machine import Pin, PWM
 
 class Motor:
-    def __init__(self, IN1, IN2=16):
+    def __init__(self, IN1, IN2):
         # Assign Pin Values
         self.IN1 = IN1
         self.IN2 = IN2

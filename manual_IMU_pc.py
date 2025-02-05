@@ -9,12 +9,12 @@ import matplotlib.pyplot as plt
 
 ser = serial.Serial('COM19', 9600)  # open serial DATA port
 
-sampling_rate = 10;  # qHz
+sampling_rate = 100;  # Hz
 yaw_data = [];
 pitch_data = [];
 
 # Decode serial data and append to yaw_data & pitch_data
-def read_serial   (stop_event):
+def read_serial(stop_event):
     while not stop_event.is_set():
         data = ser.readline().strip().decode("utf-8").split(',')
         yaw_data.append(float(data[0]))
