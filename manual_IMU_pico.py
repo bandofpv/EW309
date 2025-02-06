@@ -7,7 +7,7 @@ from bno055 import *
 from motor import Motor
 
 tty = ttyacm.open(1)  # open serial DATA port
-sampling_rate = 100  # Hz
+sampling_rate = 10  # Hz
 
 # Define SCL & SDA pins for BNO055 IMU
 i2c1 = machine.I2C(1, scl=machine.Pin(3), sda=machine.Pin(2))
@@ -36,6 +36,8 @@ def wrap2pi(ang):
 _thread.start_new_thread(read_serial, ())
   
 # Wait for user to start sending keyboard commands
+data = False
+print("Waiting for keyboard input...")
 while True:
     if data:
         break
@@ -45,8 +47,9 @@ while True:
 while True:
     # Read imu data and send through serial port
     yaw, pitch, roll = imu.euler()
-    print(f"Yaw: {wrap2pi(yaw)} Pitch: {pitch}")
-    tty.print(f"{wrap2pi(yaw)},{pitch}")
+    x_omega, y_omega, z_omega = imu.gyro()
+    print(f"Yaw: {wrap2pi(yaw)} Pitch: {pitch} Yaw Velocity: {z_omega} Pitch Velocity: {y_omega}")
+    tty.print(f"{wrap2pi(yaw)},{pitch},{z_omega},{y_omega}")
     
     # Check if serial data was recieved and control motors
     if data:
@@ -62,6 +65,10 @@ while True:
         elif data == "SPACE":  # stop motors
             pitch_motor.move(0)
             yaw_motor.move(0)
+        elif data == "QUIT":  # stop motors and break
+            pitch_motor.move(0)
+            yaw_motor.move(0)
+            break
         data = None  # reset data variable
         
     time.sleep(1/sampling_rate)  # control loop rate

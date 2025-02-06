@@ -12,6 +12,8 @@ imu = BNO055(i2c1)
 while True:
     time.sleep(0.1)  # 10 Hz
     yaw, pitch, roll = imu.euler()
+    x_omega, y_omega, z_omega = imu.gyro()
     print(f"Yaw: {yaw} Pitch: {pitch}")
+    print(f"x_omega: {x} y_omega: {y} z_omega: {z}")
     tty.print(yaw)
     tty.print(pitch)

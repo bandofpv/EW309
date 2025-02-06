@@ -7,11 +7,13 @@ import threading
 import numpy as np
 import matplotlib.pyplot as plt
 
-ser = serial.Serial('COM19', 9600)  # open serial DATA port
+ser = serial.Serial('COM21', 9600)  # open serial DATA port
 
-sampling_rate = 100;  # Hz
-yaw_data = [];
-pitch_data = [];
+sampling_rate = 10  # Hz
+yaw_data = []
+pitch_data = []
+yaw_velocity_data = []
+pitch_velocity_data = []
 
 # Decode serial data and append to yaw_data & pitch_data
 def read_serial(stop_event):
@@ -19,7 +21,9 @@ def read_serial(stop_event):
         data = ser.readline().strip().decode("utf-8").split(',')
         yaw_data.append(float(data[0]))
         pitch_data.append(float(data[1]))
-        print(f"RECEIVED: Yaw: {float(data[0])} Pitch: {data[1]}")
+        yaw_velocity_data.append(-float(data[2]))
+        pitch_velocity_data.append(-float(data[3]))
+        print(f"RECEIVED: Yaw: {float(data[0])} Pitch: {data[1]} Yaw Velocity: {data[2]} Pitch Velocity: {data[3]}")
 
 # Start read_serial on seperate thread
 stop_event = threading.Event()
@@ -27,6 +31,7 @@ serial_thread = threading.Thread(target=read_serial, args=(stop_event,))
 serial_thread.start()
 
 # Check if arrow keys are pressed and send serial data to Pico
+print("Waiting for keyboard input...")
 while True:
     key = keyboard.read_key()
     if keyboard.is_pressed('up'): 
@@ -46,7 +51,7 @@ while True:
         ser.write(b"SPACE\n")  # send to serial
     elif keyboard.is_pressed('q'):
         print('Quitting the program')
-        ser.write(b"SPACE\n")  # send to serial
+        ser.write(b"QUIT\n")  # send to serial
         stop_event.set()  # stop serial_read thread
         serial_thread.join()
         break
@@ -73,8 +78,10 @@ plt.legend()
 
 # Subplot for Angular Velocity
 plt.subplot(2, 1, 2)
-plt.plot(time_stamps, yaw_velocity, marker='.', label='Yaw')
-plt.plot(time_stamps, pitch_velocity, marker='.', label='Ptich')
+plt.plot(time_stamps, yaw_velocity_data, marker='.', label='Yaw Gyro')
+plt.plot(time_stamps, pitch_velocity_data, marker='.', label='Pitch Gyro')
+plt.plot(time_stamps, yaw_velocity, marker='.', label='Yaw Derivative')
+plt.plot(time_stamps, pitch_velocity, marker='.', label='Pitch Derivative')
 plt.title("Angular Velocity vs. Time")
 plt.xlabel("Time (seconds)")
 plt.ylabel("Angular Velocity (degrees/sec)")
