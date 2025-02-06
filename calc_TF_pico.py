@@ -1,4 +1,4 @@
-# calc_TF_pico.py
+# calc_TF_pico.py --> copy of manual_IMU_pico.py
 
 import time
 import ttyacm
@@ -18,15 +18,14 @@ yaw_motor = Motor(9, 10)
 pitch_motor = Motor(13, 12)
 
 const_speed = 0.6  # set motor duty cycle speed
-step_duration = 0.2  # seconds
-interval = 1  # seconds between step inputs
 
 # Decode serial data
 def read_serial():
     global data
     while True:
         data = tty.readline().strip()
-        
+    
+# Wraps angles in degrees to the interval [-180,180]
 def wrap2pi(ang):
     while ang > 180.0:
         ang = ang - 360.0
@@ -38,6 +37,8 @@ def wrap2pi(ang):
 _thread.start_new_thread(read_serial, ())
   
 # Wait for user to start sending keyboard commands
+data = False
+print("Waiting for keyboard input...")
 while True:
     if data:
         break
@@ -47,8 +48,9 @@ while True:
 while True:
     # Read imu data and send through serial port
     yaw, pitch, roll = imu.euler()
-    print(f"Yaw: {wrap2pi(yaw)} Pitch: {pitch}")
-    tty.print(f"{wrap2pi(yaw)},{pitch}")
+    x_omega, y_omega, z_omega = imu.gyro()
+    print(f"Yaw: {wrap2pi(yaw)} Pitch: {pitch} Yaw Velocity: {z_omega} Pitch Velocity: {y_omega}")
+    tty.print(f"{wrap2pi(yaw)},{pitch},{z_omega},{y_omega}")
     
     # Check if serial data was recieved and control motors
     if data:
@@ -64,24 +66,10 @@ while True:
         elif data == "SPACE":  # stop motors
             pitch_motor.move(0)
             yaw_motor.move(0)
-        elif data = "ENTER":  # step response
-            yaw_motor.move(const_speed)
-            time.sleep(step_duration)
-            yaw_motor.move(0)
-            time.sleep(interval)
-            yaw_motor.move(-const_speed)
-            time.sleep(step_duration)
-            yaw_motor.move(0)
-            time.sleep(interval)
-            pich_motor.move(const_speed)
-            time.sleep(sleep_duration)
+        elif data == "QUIT":  # stop motors and break
             pitch_motor.move(0)
-            time.sleep(interval)
-            pich_motor.move(-const_speed)
-            time.sleep(sleep_duration)
-            pitch_motor.move(0)
-            
+            yaw_motor.move(0)
+            break
         data = None  # reset data variable
         
     time.sleep(1/sampling_rate)  # control loop rate
-
