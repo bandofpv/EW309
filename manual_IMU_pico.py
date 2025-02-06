@@ -24,7 +24,8 @@ def read_serial():
     global data
     while True:
         data = tty.readline().strip()
-        
+    
+# Wraps angles in degrees to the interval [-180,180]
 def wrap2pi(ang):
     while ang > 180.0:
         ang = ang - 360.0
@@ -36,8 +37,8 @@ def wrap2pi(ang):
 _thread.start_new_thread(read_serial, ())
   
 # Wait for user to start sending keyboard commands
-data = False
 print("Waiting for keyboard input...")
+data = False
 while True:
     if data:
         break
@@ -49,7 +50,7 @@ while True:
     yaw, pitch, roll = imu.euler()
     x_omega, y_omega, z_omega = imu.gyro()
     print(f"Yaw: {wrap2pi(yaw)} Pitch: {pitch} Yaw Velocity: {z_omega} Pitch Velocity: {y_omega}")
-    tty.print(f"{wrap2pi(yaw)},{pitch},{z_omega},{y_omega}")
+    tty.print(f"{wrap2pi(yaw)},{pitch},{z_omega},{y_omega}")  # print data to serial port
     
     # Check if serial data was recieved and control motors
     if data:

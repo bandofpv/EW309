@@ -15,10 +15,11 @@ pitch_data = []
 yaw_velocity_data = []
 pitch_velocity_data = []
 
-# Decode serial data and append to yaw_data & pitch_data
+# Read serial data
 def read_serial(stop_event):
+    # Loop until thread is stopped
     while not stop_event.is_set():
-        data = ser.readline().strip().decode("utf-8").split(',')
+        data = ser.readline().strip().decode("utf-8").split(',')  # decode serial data
         yaw_data.append(float(data[0]))
         pitch_data.append(float(data[1]))
         yaw_velocity_data.append(-float(data[2]))
@@ -58,15 +59,10 @@ while True:
 
     time.sleep(1/sampling_rate)  # control loop rate
 
-time_stamps = np.arange(len(yaw_data)) / sampling_rate  # calculate time_stamps for plot
-
-# Compute angular velocity 
-yaw_velocity = np.diff(yaw_data, prepend=yaw_data[0]) * sampling_rate
-pitch_velocity = np.diff(pitch_data, prepend=pitch_data[0]) * sampling_rate
-
-plt.figure(figsize=(12, 6))  # set figure size 
+time_stamps = np.arange(len(yaw_data)) / sampling_rate  # calculate time stamps for plot
 
 # Subplot for Position vs. Time
+plt.figure(figsize=(10, 5))
 plt.subplot(2, 1, 1)
 plt.plot(time_stamps, yaw_data, marker='.', label='Yaw')
 plt.plot(time_stamps, pitch_data, marker='.', label='Pitch')
@@ -78,10 +74,8 @@ plt.legend()
 
 # Subplot for Angular Velocity
 plt.subplot(2, 1, 2)
-plt.plot(time_stamps, yaw_velocity_data, marker='.', label='Yaw Gyro')
-plt.plot(time_stamps, pitch_velocity_data, marker='.', label='Pitch Gyro')
-plt.plot(time_stamps, yaw_velocity, marker='.', label='Yaw Derivative')
-plt.plot(time_stamps, pitch_velocity, marker='.', label='Pitch Derivative')
+plt.plot(time_stamps, yaw_velocity_data, marker='.', label='Yaw')
+plt.plot(time_stamps, pitch_velocity_data, marker='.', label='Pitch')
 plt.title("Angular Velocity vs. Time")
 plt.xlabel("Time (seconds)")
 plt.ylabel("Angular Velocity (degrees/sec)")
