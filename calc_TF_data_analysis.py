@@ -5,10 +5,9 @@ import pandas as pd
 import control as ct
 from statistics import mean
 import matplotlib.pyplot as plt
-from scipy.interpolate import interp1d
 
 data = pd.read_csv("data.csv")
-step_magnitude = 0.6  # duty cycle of step input
+step_magnitude = 0.6 * 12  # duty cycle times voltage
 
 # Finds the start and end indices of step response
 def find_bump_indices(data, threshold):
@@ -31,7 +30,7 @@ def calc_final_value(data, threshold):
         if abs(data[i]) > threshold:  # check for values above threshold in deg/s
             final_value_index = i
     final_value = mean(data[final_value_index-5:final_value_index])  # calculate final value based on mean
-    return final_value
+    return final_value, final_value_index
 
 # Calculate time constant of step response (time of intersection at 63% final value)
 def calc_time_constant(time, velocity, final_value):
@@ -47,11 +46,12 @@ def calc_step_start(time, velocity):
     for i in range(len(data)):
         if abs(velocity[i]) > 1:  # check for values below 1 deg/s
             return time[i-1]
-        
-def generate_step(time, transfer_function):
-    time = np.linspace(time[0], time[-1], 1000)  # times to input through
-    x, y = ct.step_response(transfer_function, time) # uhh...
-    return x, y
+
+# Generate step response
+def generate_step(transfer_function, start_time, end_time, magnitude):
+    time = np.linspace(start_time, end_time, 1000)  # times to step through (removing padding)
+    x, y = ct.step_response(transfer_function, time)  # calculate unit step response
+    return x, y*magnitude
     
 yaw_indices = find_bump_indices(data['yaw_velocity'], 20)
 pitch_indices = find_bump_indices(data['pitch_velocity'], 20)
@@ -83,10 +83,11 @@ plt.figure(figsize=(10, 5))
 plt.subplot(2, 2, 1)
 time = data['time'][yaw_indices[0][0]:yaw_indices[0][1]].tolist()
 yaw_velocity = data['yaw_velocity'][yaw_indices[0][0]:yaw_indices[0][1]].tolist()
-final_value = calc_final_value(yaw_velocity, 20)
-SSG = final_value / step_magnitude
+final_value, _ = calc_final_value(yaw_velocity, 30)
 tau_time = calc_time_constant(time, yaw_velocity, final_value)
 start_time = calc_step_start(time, yaw_velocity)
+SSG1 = abs(final_value / step_magnitude)  # calculate SSG
+tau1 = tau_time - start_time  # calculate time constant
 plt.plot(time, yaw_velocity, marker='.')
 plt.axhline(final_value, color='red', linestyle='-')
 plt.axhline(0.63*final_value, color='magenta', linestyle='-')
@@ -100,10 +101,11 @@ plt.grid(True)
 plt.subplot(2, 2, 2)
 time = data['time'][yaw_indices[1][0]:yaw_indices[1][1]].tolist()
 yaw_velocity = data['yaw_velocity'][yaw_indices[1][0]:yaw_indices[1][1]].tolist()
-final_value = calc_final_value(yaw_velocity, 20)
-SSG = final_value / step_magnitude
+final_value, _ = calc_final_value(yaw_velocity, 30)
 tau_time = calc_time_constant(time, yaw_velocity, final_value)
 start_time = calc_step_start(time, yaw_velocity)
+SSG2 = abs(final_value / step_magnitude)  # calculate SSG
+tau2 = tau_time - start_time  # calculate time constant
 plt.plot(time, yaw_velocity, marker='.')
 plt.axhline(final_value, color='red', linestyle='-')
 plt.axhline(0.63*final_value, color='magenta', linestyle='-')
@@ -114,13 +116,26 @@ plt.xlabel("Time (seconds)")
 plt.ylabel("Velocity (degrees/second)")
 plt.grid(True)
 
+# Calculate yaw transfer function
+a = 1 / mean([tau1, tau2])  # calulate a coefficient using average tau
+b = mean([SSG1, SSG2]) * a  # calulate b coefficient using average SSG
+num = b  # numerator coefficient b
+den = [1, a, 0]  # denominator coefficients (s^s + as)
+yaw_pos_tf = ct.TransferFunction(num, den)  # position transfer function
+print("Yaw Position Transfer Function: ", yaw_pos_tf)
+num = b  # numerator coefficient b
+den = [1, a]  # denominator coefficients (s + a)
+yaw_vel_tf = ct.TransferFunction(num, den)  # velocity transfer function
+print("Yaw Velocity Transfer Function: ", yaw_vel_tf)
+
 plt.subplot(2, 2, 3)
 time = data['time'][pitch_indices[0][0]:pitch_indices[0][1]].tolist()
 pitch_velocity = data['pitch_velocity'][pitch_indices[0][0]:pitch_indices[0][1]].tolist()
-final_value = calc_final_value(pitch_velocity, 20)
-SSG = final_value / step_magnitude
+final_value, _ = calc_final_value(pitch_velocity, 30)
 tau_time = calc_time_constant(time, pitch_velocity, final_value)
 start_time = calc_step_start(time, pitch_velocity)
+SSG1 = abs(final_value / step_magnitude)  # calculate SSG
+tau1 = tau_time - start_time  # calculate time constant
 plt.plot(time, pitch_velocity, marker='.')
 plt.axhline(final_value, color='red', linestyle='-')
 plt.axhline(0.63*final_value, color='magenta', linestyle='-')
@@ -134,10 +149,11 @@ plt.grid(True)
 plt.subplot(2, 2, 4)
 time = data['time'][pitch_indices[1][0]:pitch_indices[1][1]].tolist()
 pitch_velocity = data['pitch_velocity'][pitch_indices[1][0]:pitch_indices[1][1]].tolist()
-final_value = calc_final_value(pitch_velocity, 20)
-SSG = final_value / step_magnitude
+final_value, _ = calc_final_value(pitch_velocity, 30)
 tau_time = calc_time_constant(time, pitch_velocity, final_value)
 start_time = calc_step_start(time, pitch_velocity)
+SSG2 = abs(final_value / step_magnitude)  # calculate SSG
+tau2 = tau_time - start_time  # calculate time constant
 plt.plot(time, pitch_velocity, marker='.')
 plt.axhline(y=final_value, color='red', linestyle='-')
 plt.axhline(y=(0.63*final_value), color='magenta', linestyle='-')
@@ -149,11 +165,23 @@ plt.ylabel("Velocity (degrees/second)")
 plt.grid(True)
 plt.tight_layout()
 
+# Calculate pitch transfer function
+a = 1 / mean([tau1, tau2])  # calulate a coefficient using average tau
+b = mean([SSG1, SSG2]) * a  # calulate b coefficient using average SSG
+num = b  # numerator coefficient b
+den = [1, a, 0]  # denominator coefficients (s^s + as)
+pitch_pos_tf = ct.TransferFunction(num, den)  # position transfer function
+print("Pitch Position Transfer Function: ", pitch_pos_tf)
+num = b  # numerator coefficient b
+den = [1, a]  # denominator coefficients (s + a)
+pitch_vel_tf = ct.TransferFunction(num, den)  # velocity transfer function
+print("Pitch Velocity Transfer Function: ", pitch_vel_tf)
+
 # Large plot for transfer function calculation
 plt.figure(figsize=(10, 5))
 time = data['time'][yaw_indices[0][0]:yaw_indices[0][1]].tolist()
 yaw_velocity = data['yaw_velocity'][yaw_indices[0][0]:yaw_indices[0][1]].tolist()
-final_value = calc_final_value(yaw_velocity, 20)
+final_value, _ = calc_final_value(yaw_velocity, 30)
 SSG = final_value / step_magnitude
 tau_time = calc_time_constant(time, yaw_velocity, final_value)
 start_time = calc_step_start(time, yaw_velocity)
@@ -169,26 +197,17 @@ plt.legend()
 plt.grid(True)
 plt.tight_layout()
 
-# Subplots for transfer function comparison
+# Subplots for velocity transfer function comparison
 plt.figure(figsize=(10, 5))
 plt.subplot(2, 2, 1)
 time = data['time'][yaw_indices[0][0]:yaw_indices[0][1]].tolist()
 yaw_velocity = data['yaw_velocity'][yaw_indices[0][0]:yaw_indices[0][1]].tolist()
-final_value = calc_final_value(yaw_velocity, 20)
+final_value, final_index = calc_final_value(yaw_velocity, 30)
 tau_time = calc_time_constant(time, yaw_velocity, final_value)
 start_time = calc_step_start(time, yaw_velocity)
-SSG = final_value / step_magnitude
-tau = tau_time - start_time
-a = 1 / tau
-b = SSG * a
-num = a  # numerator coefficient a
-den = [1, b]  # denominator coefficients (s + b)
-# sys = ct.TransferFunction(num, den)
-# x, y = generate_step(time, sys)
-# print(x)
-# print(y)
+t, step_response = generate_step(yaw_vel_tf, start_time, time[final_index], step_magnitude)
 plt.plot(time, yaw_velocity, marker='.')
-# plt.plot(x, y)
+plt.plot(t, step_response)
 plt.title("Yaw Velocity vs. Time")
 plt.xlabel("Time (seconds)")
 plt.ylabel("Velocity (degrees/second)")
@@ -197,12 +216,12 @@ plt.grid(True)
 plt.subplot(2, 2, 2)
 time = data['time'][yaw_indices[1][0]:yaw_indices[1][1]].tolist()
 yaw_velocity = data['yaw_velocity'][yaw_indices[1][0]:yaw_indices[1][1]].tolist()
-final_value = calc_final_value(yaw_velocity, 20)
+final_value, final_index = calc_final_value(yaw_velocity, 30)
 tau_time = calc_time_constant(time, yaw_velocity, final_value)
 start_time = calc_step_start(time, yaw_velocity)
-SSG = final_value / step_magnitude
-tau = tau_time - start_time
+t, step_response = generate_step(yaw_vel_tf, start_time, time[final_index], -step_magnitude)
 plt.plot(time, yaw_velocity, marker='.')
+plt.plot(t, step_response)
 plt.title("Yaw Velocity vs. Time")
 plt.xlabel("Time (seconds)")
 plt.ylabel("Velocity (degrees/second)")
@@ -211,12 +230,12 @@ plt.grid(True)
 plt.subplot(2, 2, 3)
 time = data['time'][pitch_indices[0][0]:pitch_indices[0][1]].tolist()
 pitch_velocity = data['pitch_velocity'][pitch_indices[0][0]:pitch_indices[0][1]].tolist()
-final_value = calc_final_value(pitch_velocity, 20)
+final_value, final_index = calc_final_value(pitch_velocity, 30)
 tau_time = calc_time_constant(time, pitch_velocity, final_value)
 start_time = calc_step_start(time, pitch_velocity)
+t, step_response = generate_step(pitch_vel_tf, start_time, time[final_index], -step_magnitude)
 plt.plot(time, pitch_velocity, marker='.')
-SSG = final_value / step_magnitude
-tau = tau_time - start_time
+plt.plot(t, step_response)
 plt.title("Pitch Velocity vs. Time")
 plt.xlabel("Time (seconds)")
 plt.ylabel("Velocity (degrees/second)")
@@ -225,17 +244,33 @@ plt.grid(True)
 plt.subplot(2, 2, 4)
 time = data['time'][pitch_indices[1][0]:pitch_indices[1][1]].tolist()
 pitch_velocity = data['pitch_velocity'][pitch_indices[1][0]:pitch_indices[1][1]].tolist()
-final_value = calc_final_value(pitch_velocity, 20)
-SSG = final_value / step_magnitude
+final_value, final_index = calc_final_value(pitch_velocity, 30)
 tau_time = calc_time_constant(time, pitch_velocity, final_value)
 start_time = calc_step_start(time, pitch_velocity)
+t, step_response = generate_step(pitch_vel_tf, start_time, time[final_index], step_magnitude)
 plt.plot(time, pitch_velocity, marker='.')
-SSG = final_value / step_magnitude
-tau = tau_time - start_time
+plt.plot(t, step_response)
 plt.title("Pitch Velocity vs. Time")
 plt.xlabel("Time (seconds)")
 plt.ylabel("Velocity (degrees/second)")
 plt.grid(True)
+plt.tight_layout()
+
+# Large plot for velocity transfer function comparison
+plt.figure(figsize=(10, 5))
+time = data['time'][yaw_indices[0][0]:yaw_indices[0][1]].tolist()
+yaw_velocity = data['yaw_velocity'][yaw_indices[0][0]:yaw_indices[0][1]].tolist()
+final_value, final_index = calc_final_value(yaw_velocity, 30)
+tau_time = calc_time_constant(time, yaw_velocity, final_value)
+start_time = calc_step_start(time, yaw_velocity)
+t, step_response = generate_step(yaw_vel_tf, start_time, time[final_index], step_magnitude)
+plt.plot(time, yaw_velocity, marker='.', label='Experimental Data')
+plt.plot(t, step_response, label='Estimated Step Response')
+plt.title("Yaw Velocity vs. Time")
+plt.xlabel("Time (seconds)")
+plt.ylabel("Velocity (degrees/second)")
+plt.grid(True)
+plt.legend()
 plt.tight_layout()
 
 # Display plots
