@@ -10,8 +10,8 @@ import matplotlib.pyplot as plt
 
 ser = serial.Serial('COM21', 9600)  # open serial DATA port
 
-sampling_rate = 100  # Hz
-step_duration = 1  # seconds
+sampling_rate = 10  # Hz
+step_duration = 1.5  # seconds
 interval = 1  # seconds between step inputs
 yaw_data = []
 pitch_data = []
@@ -81,8 +81,6 @@ while True:
     elif keyboard.is_pressed('q'):
         print('Quitting the program')
         ser.write(b"QUIT\n")  # send to serial
-        stop_event.set()  # stop serial_read thread
-        serial_thread.join()
         break
 
     time.sleep(1/sampling_rate)  # control loop rate
@@ -103,7 +101,7 @@ plt.legend()
 # Subplot for Angular Velocity
 plt.subplot(2, 1, 2)
 plt.plot(time_stamps, yaw_velocity_data, marker='.', label='Yaw')
-plt.plot(time_stamps, pitch_velocity_data, marker='.', label='Ptich')
+plt.plot(time_stamps, pitch_velocity_data, marker='.', label='Pitch')
 plt.title("Angular Velocity vs. Time")
 plt.xlabel("Time (seconds)")
 plt.ylabel("Angular Velocity (degrees/sec)")

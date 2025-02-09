@@ -7,7 +7,7 @@ from bno055 import *
 from motor import Motor
 
 tty = ttyacm.open(1)  # open serial DATA port
-sampling_rate = 100  # Hz
+sampling_rate = 10  # Hz
 
 # Define SCL & SDA pins for BNO055 IMU
 i2c1 = machine.I2C(1, scl=machine.Pin(3), sda=machine.Pin(2))
@@ -17,7 +17,7 @@ imu = BNO055(i2c1)
 yaw_motor = Motor(9, 10)
 pitch_motor = Motor(13, 12)
 
-const_speed = 0.6  # set motor duty cycle speed
+const_speed = 0.3  # set motor duty cycle speed
 
 # Decode serial data
 def read_serial():
