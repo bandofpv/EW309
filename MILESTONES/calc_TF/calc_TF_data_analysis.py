@@ -259,7 +259,7 @@ yaw_velocity = data['yaw_velocity'][yaw_indices[0][0]:yaw_indices[0][1]].tolist(
 final_value, final_index = calc_final_value(yaw_velocity, 15)
 tau_time = calc_time_constant(time, yaw_velocity, final_value)
 start_time = calc_step_start(time, yaw_velocity)
-t, step_response = generate_step(yaw_vel_tf, start_time, time[final_index+1], step_magnitude)
+t, step_response = generate_step(yaw_vel_tf, start_time, time[final_index], step_magnitude)
 plt.plot(time, yaw_velocity, marker='.', label='Experimental Data')
 plt.plot(t, step_response, label='Estimated Step Response')
 plt.title("Yaw Velocity vs. Time")
