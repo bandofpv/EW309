@@ -1,11 +1,10 @@
-# pid_pico.py
+# find_deadzone_pico.py --> copy of calc_TF_pico.py --> copy of manual_IMU_pico.py
 
 import time
 import ttyacm
 import _thread
 from bno055 import *
 from motor import Motor
-from controller import Controller
 
 tty = ttyacm.open(1)  # open serial DATA port
 sampling_rate = 10  # Hz
@@ -16,13 +15,10 @@ imu = BNO055(i2c1)
 
 # Create Motor instances
 yaw_motor = Motor(9, 10)
-pitch_motor = Motor(12, 13)
+pitch_motor = Motor(13, 12)
 
-# Initialize controllers
-yaw_control = Controller(yaw_motor, P=1, I=0.01, D=0, sampling_rate=sampling_rate)
-pitch_control = Controller(pitch_motor, P=1, I=0.01, D=0, sampling_rate=sampling_rate)
-
-const_speed = 0.6  # set motor duty cycle speed
+const_speed = 0.0  # set motor duty cycle
+increment = 0.1  # how much to increment duty cycle
 
 # Decode serial data
 def read_serial():
@@ -43,18 +39,19 @@ _thread.start_new_thread(read_serial, ())
   
 # Wait for user to start sending keyboard commands
 data = False
-print("Waiting for keyboard input...")    
-while not data:
-    time.sleep(0.5)
+print("Waiting for keyboard input...")
+while True:
+    if data:
+        break
+    time.sleep(0.5)  # Sleep for a short time to avoid busy-waiting
     
 # Move motor based on serial keyboard signals
-move = False
-while True:
+while True:    
     # Read imu data and send through serial port
     yaw, pitch, roll = imu.euler()
     x_omega, y_omega, z_omega = imu.gyro()
-    print(f"Yaw: {wrap2pi(yaw)} Pitch: {pitch} Yaw Velocity: {z_omega} Pitch Velocity: {y_omega}")
-    tty.print(f"{wrap2pi(yaw)},{pitch},{z_omega},{y_omega}")
+    print(f"Yaw: {wrap2pi(yaw)} Pitch: {pitch} Yaw Velocity: {z_omega} Pitch Velocity: {y_omega} Duty Cycle: {const_speed}")
+    tty.print(f"{wrap2pi(yaw)},{pitch},{z_omega},{y_omega},{const_speed}")
     
     # Check if serial data was recieved and control motors
     if data:
@@ -70,21 +67,13 @@ while True:
         elif data == "SPACE":  # stop motors
             pitch_motor.move(0)
             yaw_motor.move(0)
+            const_speed = 0  # reset duty cycle
+        elif data == "KEEP MOVING":
+            const_speed = const_speed + increment
         elif data == "QUIT":  # stop motors and break
             pitch_motor.move(0)
             yaw_motor.move(0)
             break
-        elif data == "ENTER":  # PID Control
-            move = True        
         data = None  # reset data variable
-    
-    elif move:
-        yaw_control.move_to_angle(wrap2pi(yaw), 30, z_omega)
-        pitch_control.move_to_angle(pitch, 30, y_omega)
-#         if yaw_control.move_to_angle(wrap2pi(yaw), 30, z_omega):
-#             yaw_motor.move(0)
-#             move = False
-#         if pitch_control.move_to_angle(pitch, 30, y_omega):
-#             pitch_motor.move(0)
-#             move = False
+        
     time.sleep(1/sampling_rate)  # control loop rate

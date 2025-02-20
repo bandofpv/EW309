@@ -8,26 +8,33 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 
-ser = serial.Serial('COM19', 9600)  # open serial DATA port
+ser = serial.Serial('COM21', 9600)  # open serial DATA port
 
-sampling_rate = 100;  # Hz
-yaw_data = [];
-pitch_data = [];
+sampling_rate = 10  # Hz
+step_duration = 1  # seconds
+interval = 1  # seconds between step inputs
+yaw_data = []
+pitch_data = []
+yaw_velocity_data = []
+pitch_velocity_data = []
 
-# Decode serial data and append to yaw_data & pitch_data
+# Decode serial data
 def read_serial(stop_event):
     while not stop_event.is_set():
         data = ser.readline().strip().decode("utf-8").split(',')
         yaw_data.append(float(data[0]))
         pitch_data.append(float(data[1]))
-        print(f"RECEIVED: Yaw: {float(data[0])} Pitch: {data[1]}")
+        yaw_velocity_data.append(-float(data[2]))
+        pitch_velocity_data.append(-float(data[3]))
+        print(f"RECEIVED: Yaw: {float(data[0])} Pitch: {data[1]} Yaw Velocity: {data[2]} Pitch Velocity: {data[3]}")
 
 # Start read_serial on seperate thread
 stop_event = threading.Event()
 serial_thread = threading.Thread(target=read_serial, args=(stop_event,))
-serial_thread.start()
+# serial_thread.start()
 
 # Check if arrow keys are pressed and send serial data to Pico
+print("Waiting for keyboard input...")
 while True:
     key = keyboard.read_key()
     if keyboard.is_pressed('up'): 
@@ -47,25 +54,28 @@ while True:
         ser.write(b"SPACE\n")  # send to serial
     elif keyboard.is_pressed('enter'):
         print('Enter button pressed')
-        ser.write(b"ENTER\n")  # send to serial
-    elif keyboard.is_pressed('q'):
-        print('Quitting the program')
-        ser.write(b"SPACE\n")  # send to serial
+        serial_thread.start()  # start reading serial port
+        ser.write(b"SPACE\n")  # send initial signal
+        time.sleep(interval)  # wait for initialization
+        # do stuff
+        ser.write(b"ENTER\n")
+        time.sleep(2*interval)
+        ser.write(b"QUIT\n")
         stop_event.set()  # stop serial_read thread
         serial_thread.join()
+        print('Quitting the program')
+        break
+    elif keyboard.is_pressed('q'):
+        print('Quitting the program')
+        ser.write(b"QUIT\n")  # send to serial
         break
 
     time.sleep(1/sampling_rate)  # control loop rate
 
 time_stamps = np.arange(len(yaw_data)) / sampling_rate  # calculate time_stamps for plot
 
-# Compute angular velocity 
-yaw_velocity = np.diff(yaw_data, prepend=yaw_data[0]) * sampling_rate
-pitch_velocity = np.diff(pitch_data, prepend=pitch_data[0]) * sampling_rate
-
-plt.figure(figsize=(12, 6))  # set figure size 
-
 # Subplot for Position vs. Time
+plt.figure(figsize=(10, 5))
 plt.subplot(2, 1, 1)
 plt.plot(time_stamps, yaw_data, marker='.', label='Yaw')
 plt.plot(time_stamps, pitch_data, marker='.', label='Pitch')
@@ -77,8 +87,8 @@ plt.legend()
 
 # Subplot for Angular Velocity
 plt.subplot(2, 1, 2)
-plt.plot(time_stamps, yaw_velocity, marker='.', label='Yaw')
-plt.plot(time_stamps, pitch_velocity, marker='.', label='Ptich')
+plt.plot(time_stamps, yaw_velocity_data, marker='.', label='Yaw')
+plt.plot(time_stamps, pitch_velocity_data, marker='.', label='Pitch')
 plt.title("Angular Velocity vs. Time")
 plt.xlabel("Time (seconds)")
 plt.ylabel("Angular Velocity (degrees/sec)")
@@ -89,5 +99,5 @@ plt.legend()
 plt.tight_layout()
 plt.show()
 
-df = pd.DataFrame({'time': time_stamps, 'yaw': yaw_data, 'pitch': pitch_data, 'yaw_velocity': yaw_velocity, 'pitch_velocity': pitch_velocity})
+df = pd.DataFrame({'time': time_stamps, 'yaw': yaw_data, 'pitch': pitch_data, 'yaw_velocity': yaw_velocity_data, 'pitch_velocity': pitch_velocity_data})
 df.to_csv("data.csv")
