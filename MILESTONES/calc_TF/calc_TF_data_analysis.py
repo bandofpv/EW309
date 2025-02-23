@@ -70,7 +70,7 @@ plt.legend()
 # Subplot for Angular Velocity
 plt.subplot(2, 1, 2)
 plt.plot(data['time'], data['yaw_velocity'], marker='.', label='Yaw')
-plt.plot(data['time'], data['pitch_velocity'], marker='.', label='Ptich')
+plt.plot(data['time'], data['pitch_velocity'], marker='.', label='Pitch')
 plt.title("Angular Velocity vs. Time")
 plt.xlabel("Time (seconds)")
 plt.ylabel("Angular Velocity (degrees/sec)")

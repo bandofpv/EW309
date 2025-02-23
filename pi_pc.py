@@ -99,5 +99,5 @@ plt.legend()
 plt.tight_layout()
 plt.show()
 
-df = pd.DataFrame({'time': time_stamps, 'yaw': yaw_data, 'pitch': pitch_data, 'yaw_velocity': yaw_velocity_data, 'pitch_velocity': pitch_velocity_data})
-df.to_csv("data.csv")
+df = pd.DataFrame({'t ime': time_stamps, 'yaw': yaw_data, 'pitch': pitch_data, 'yaw_velocity': yaw_velocity_data, 'pitch_velocity': pitch_velocity_data})
+df.to_csv("data.csv" )

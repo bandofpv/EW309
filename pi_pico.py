@@ -19,8 +19,8 @@ yaw_motor = Motor(9, 10)
 pitch_motor = Motor(12, 13)
 
 # Initialize controllers
-yaw_control = Controller(yaw_motor, P=1, I=0.01, D=0, sampling_rate=sampling_rate)
-pitch_control = Controller(pitch_motor, P=1, I=0.01, D=0, sampling_rate=sampling_rate)
+yaw_control = Controller(yaw_motor, P=1, I=0.01, sampling_rate=sampling_rate)
+pitch_control = Controller(pitch_motor, P=1, I=0.01, sampling_rate=sampling_rate)
 
 const_speed = 0.6  # set motor duty cycle speed
 

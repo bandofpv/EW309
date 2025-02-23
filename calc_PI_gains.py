@@ -8,20 +8,13 @@ from math import log, sqrt, pi, tan
 from statistics import mean
 import matplotlib.pyplot as plt
 
-# a = 7.979
-# b = 44.52
-# num = b  # numerator coefficient b
-# den = [1, a, 0]  # denominator coefficients (s^2 + as)
-# yaw_pos_tf = ct.TransferFunction(num, den)  # position transfer function
-# print("Yaw Position Transfer Function: ", yaw_pos_tf)
-
 # DC Motor Parameters
 a = 7.979
 b = 44.52
 
 # Design Requirements
-req_Ts = 1
-req_OS = 15;
+req_Ts = 1.5
+req_OS = 20
 
 # Calculate Design Point s_d
 sigma = 4/req_Ts;
