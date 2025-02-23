@@ -17,8 +17,9 @@ imu = BNO055(i2c1)
 yaw_motor = Motor(9, 10)
 pitch_motor = Motor(13, 12)
 
-const_speed = 0.0  # set motor duty cycle
-increment = 0.1  # how much to increment duty cycle
+const_speed = 0.15  # initial motor duty cycle
+duty_cycle = const_speed # set motor duty cycle
+increment = 0.01  # how much to increment duty cycle
 
 # Decode serial data
 def read_serial():
@@ -57,19 +58,25 @@ while True:
     if data:
         print(f"KEYBOARD: {data}")
         if data == "UP":
-            pitch_motor.move(const_speed)
+            const_speed += increment
+            duty_cycle = const_speed
+            pitch_motor.move(duty_cycle)
         elif data == "DOWN":
-            pitch_motor.move(-const_speed)
+            const_speed += increment
+            duty_cycle = -const_speed
+            pitch_motor.move(duty_cycle)
         elif data == "RIGHT":  # turn yaw motor right
-            yaw_motor.move(const_speed)
+            const_speed += increment
+            duty_cycle = const_speed
+            yaw_motor.move(duty_cycle)
         elif data == "LEFT":  # turn yaw motor left
-            yaw_motor.move(-const_speed)
+            const_speed += increment
+            duty_cycle = -const_speed
+            yaw_motor.move(duty_cycle)
         elif data == "SPACE":  # stop motors
             pitch_motor.move(0)
             yaw_motor.move(0)
-            const_speed = 0  # reset duty cycle
-        elif data == "KEEP MOVING":
-            const_speed = const_speed + increment
+            const_speed = 0.15  # reset duty cycle
         elif data == "QUIT":  # stop motors and break
             pitch_motor.move(0)
             yaw_motor.move(0)

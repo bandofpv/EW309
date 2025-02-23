@@ -1,79 +1,91 @@
-# find_deadzone_pico.py --> copy of calc_TF_pico.py --> copy of manual_IMU_pico.py
+# find_deadzone_pc.py
 
 import time
-import ttyacm
-import _thread
-from bno055 import *
-from motor import Motor
+import serial
+import keyboard
+import threading
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
 
-tty = ttyacm.open(1)  # open serial DATA port
+ser = serial.Serial('COM21', 9600)  # open serial DATA port
+
 sampling_rate = 10  # Hz
+yaw_data = []
+pitch_data = []
+yaw_velocity_data = []
+pitch_velocity_data = []
+duty_cycle_data = []
 
-# Define SCL & SDA pins for BNO055 IMU
-i2c1 = machine.I2C(1, scl=machine.Pin(3), sda=machine.Pin(2))
-imu = BNO055(i2c1)
+# Read serial data
+def read_serial(stop_event):
+    # Loop until thread is stopped
+    while not stop_event.is_set():
+        data = ser.readline().strip().decode("utf-8").split(',')  # decode serial data
+        yaw_data.append(float(data[0]))
+        pitch_data.append(float(data[1]))
+        yaw_velocity_data.append(-float(data[2]))
+        pitch_velocity_data.append(-float(data[3]))
+        duty_cycle_data.append(float(data[4]))
+        print(f"RECEIVED: Yaw: {float(data[0])} Pitch: {data[1]} Yaw Velocity: {data[2]} Pitch Velocity: {data[3]} Duty Cycle: {data[4]}")
 
-# Create Motor instances
-yaw_motor = Motor(9, 10)
-pitch_motor = Motor(13, 12)
+# Start read_serial on seperate thread
+stop_event = threading.Event()
+serial_thread = threading.Thread(target=read_serial, args=(stop_event,))
+serial_thread.start()
 
-const_speed = 0.0  # set motor duty cycle
-increment = 0.1  # how much to increment duty cycle
-
-# Decode serial data
-def read_serial():
-    global data
-    while True:
-        data = tty.readline().strip()
-    
-# Wraps angles in degrees to the interval [-180,180]
-def wrap2pi(ang):
-    while ang > 180.0:
-        ang = ang - 360.0
-    while ang < -180.0:
-        ang = ang + 360.0
-    return ang
-    
-# Start the reading serial on seperate thread
-_thread.start_new_thread(read_serial, ())
-  
-# Wait for user to start sending keyboard commands
-data = False
+# Check if arrow keys are pressed and send serial data to Pico
 print("Waiting for keyboard input...")
 while True:
-    if data:
+    key = keyboard.read_key()
+    if keyboard.is_pressed('up'): 
+        print('Up arrow pressed')
+        ser.write(b"UP\n")  # send to serial
+    elif keyboard.is_pressed('down'):
+        print('Down arrow pressed')
+        ser.write(b"DOWN\n")  # send to serial
+    elif keyboard.is_pressed('left'):
+        print('Left arrow pressed')
+        ser.write(b"LEFT\n")  # send to serial
+    elif keyboard.is_pressed('right'):
+        print('Right arrow pressed')
+        ser.write(b"RIGHT\n")  # send to serial
+    elif keyboard.is_pressed('space'):
+        print('Space button pressed')
+        ser.write(b"SPACE\n")  # send to serial
+    elif keyboard.is_pressed('q'):
+        print('Quitting the program')
+        ser.write(b"QUIT\n")  # send to serial
+        stop_event.set()  # stop serial_read thread
+        serial_thread.join()
         break
-    time.sleep(0.5)  # Sleep for a short time to avoid busy-waiting
-    
-# Move motor based on serial keyboard signals
-while True:    
-    # Read imu data and send through serial port
-    yaw, pitch, roll = imu.euler()
-    x_omega, y_omega, z_omega = imu.gyro()
-    print(f"Yaw: {wrap2pi(yaw)} Pitch: {pitch} Yaw Velocity: {z_omega} Pitch Velocity: {y_omega} Duty Cycle: {const_speed}")
-    tty.print(f"{wrap2pi(yaw)},{pitch},{z_omega},{y_omega},{const_speed}")
-    
-    # Check if serial data was recieved and control motors
-    if data:
-        print(f"KEYBOARD: {data}")
-        if data == "UP":
-            pitch_motor.move(const_speed)
-        elif data == "DOWN":
-            pitch_motor.move(-const_speed)
-        elif data == "RIGHT":  # turn yaw motor right
-            yaw_motor.move(const_speed)
-        elif data == "LEFT":  # turn yaw motor left
-            yaw_motor.move(-const_speed)
-        elif data == "SPACE":  # stop motors
-            pitch_motor.move(0)
-            yaw_motor.move(0)
-            const_speed = 0  # reset duty cycle
-        elif data == "KEEP MOVING":
-            const_speed = const_speed + increment
-        elif data == "QUIT":  # stop motors and break
-            pitch_motor.move(0)
-            yaw_motor.move(0)
-            break
-        data = None  # reset data variable
-        
+
     time.sleep(1/sampling_rate)  # control loop rate
+
+time_stamps = np.arange(len(yaw_data)) / sampling_rate  # calculate time stamps for plot
+
+# Subplot for Position vs. Time
+plt.figure(figsize=(10, 5))
+plt.subplot(2, 1, 1)
+plt.plot(time_stamps, yaw_velocity_data, marker='.', label='Yaw')
+plt.plot(time_stamps, pitch_velocity_data, marker='.', label='Pitch')
+plt.title("Angular Velocity vs. Time")
+plt.xlabel("Time (seconds)")
+plt.ylabel("Angular Velocity (degrees/sec)")
+plt.grid(True)
+plt.legend()
+
+# Subplot for Angular Velocity
+plt.subplot(2, 1, 2)
+plt.plot(time_stamps, duty_cycle_data*12, marker='.')
+plt.title("Motor Voltage vs. Time")
+plt.xlabel("Time (sec)")
+plt.ylabel("Motor Voltage (V)")
+plt.grid(True)
+
+# Display plot
+plt.tight_layout()
+plt.show()
+
+df = pd.DataFrame({'time': time_stamps, 'yaw': yaw_data, 'pitch': pitch_data, 'yaw_velocity': yaw_velocity_data, 'pitch_velocity': pitch_velocity_data, 'motor_voltage': duty_cycle_data*12})
+df.to_csv("deadzone_data.csv")
