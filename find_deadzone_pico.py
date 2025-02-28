@@ -51,8 +51,8 @@ while True:
     # Read imu data and send through serial port
     yaw, pitch, roll = imu.euler()
     x_omega, y_omega, z_omega = imu.gyro()
-    print(f"Yaw: {wrap2pi(yaw)} Pitch: {pitch} Yaw Velocity: {z_omega} Pitch Velocity: {y_omega} Duty Cycle: {const_speed}")
-    tty.print(f"{wrap2pi(yaw)},{pitch},{z_omega},{y_omega},{const_speed}")
+    print(f"Yaw: {wrap2pi(yaw)} Pitch: {pitch} Yaw Velocity: {z_omega} Pitch Velocity: {y_omega} Duty Cycle: {duty_cycle}")
+    tty.print(f"{wrap2pi(yaw)},{pitch},{z_omega},{y_omega},{duty_cycle}")
     
     # Check if serial data was recieved and control motors
     if data:
@@ -72,9 +72,9 @@ while True:
         elif data == "LEFT":  # turn yaw motor left
             const_speed += increment
             duty_cycle = -const_speed
-            yaw_motor.move(duty_cycle)
+            yaw_motor.move(duty_cycle) 
         elif data == "SPACE":  # stop motors
-            pitch_motor.move(0)
+            pitch_motor.move(0) 
             yaw_motor.move(0)
             const_speed = 0.15  # reset duty cycle
         elif data == "QUIT":  # stop motors and break
@@ -83,4 +83,4 @@ while True:
             break
         data = None  # reset data variable
         
-    time.sleep(1/sampling_rate)  # control loop rate
+    time.sleep(1/sampling_rate)  # control loop rate 

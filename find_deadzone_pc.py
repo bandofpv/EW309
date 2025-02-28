@@ -63,6 +63,7 @@ while True:
     time.sleep(1/sampling_rate)  # control loop rate
 
 time_stamps = np.arange(len(yaw_data)) / sampling_rate  # calculate time stamps for plot
+motor_voltage = [x * 12 for x in duty_cycle_data]  
 
 # Subplot for Position vs. Time
 plt.figure(figsize=(10, 5))
@@ -77,7 +78,7 @@ plt.legend()
 
 # Subplot for Angular Velocity
 plt.subplot(2, 1, 2)
-plt.plot(time_stamps, duty_cycle_data*12, marker='.')
+plt.plot(time_stamps, motor_voltage, marker='.')
 plt.title("Motor Voltage vs. Time")
 plt.xlabel("Time (sec)")
 plt.ylabel("Motor Voltage (V)")
@@ -87,5 +88,5 @@ plt.grid(True)
 plt.tight_layout()
 plt.show()
 
-df = pd.DataFrame({'time': time_stamps, 'yaw': yaw_data, 'pitch': pitch_data, 'yaw_velocity': yaw_velocity_data, 'pitch_velocity': pitch_velocity_data, 'motor_voltage': duty_cycle_data*12})
+df = pd.DataFrame({'time': time_stamps, 'yaw': yaw_data, 'pitch': pitch_data, 'yaw_velocity': yaw_velocity_data, 'pitch_velocity': pitch_velocity_data, 'motor_voltage': motor_voltage})
 df.to_csv("deadzone_data.csv")
