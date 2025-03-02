@@ -19,8 +19,11 @@ yaw_motor = Motor(9, 10)
 pitch_motor = Motor(12, 13)
 
 # Initialize controllers
-yaw_control = Controller(yaw_motor, P=1, I=0.01, sampling_rate=sampling_rate)
-pitch_control = Controller(pitch_motor, P=1, I=0.01, sampling_rate=sampling_rate)
+yaw_control = Controller(yaw_motor, P=1, I=0.1, sampling_rate=sampling_rate, deadzone=[0.2,-0.2])
+pitch_control = Controller(pitch_motor, P=1, I=1.9, sampling_rate=sampling_rate, deadzone=[0.21,-0.19])
+
+# try 0.21 for pitch deadzone
+#  TUNE YAW MOTORRRR
 
 const_speed = 0.6  # set motor duty cycle speed
 
@@ -79,12 +82,12 @@ while True:
         data = None  # reset data variable
     
     elif move:
-        yaw_control.move_to_angle(wrap2pi(yaw), 30, z_omega)
-        pitch_control.move_to_angle(pitch, 30, y_omega)
+#         yaw_control.move_to_angle(wrap2pi(yaw), 30, z_omega)
+#         pitch_control.move_to_angle(pitch, 10)
 #         if yaw_control.move_to_angle(wrap2pi(yaw), 30, z_omega):
 #             yaw_motor.move(0)
 #             move = False
-#         if pitch_control.move_to_angle(pitch, 30, y_omega):
-#             pitch_motor.move(0)
-#             move = False
+        if pitch_control.move_to_angle(pitch, -5):
+            pitch_motor.move(0)
+            move = False
     time.sleep(1/sampling_rate)  # control loop rate

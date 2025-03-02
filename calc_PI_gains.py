@@ -1,4 +1,4 @@
-# calc_PID_gains.py
+# calc_PI_gains.py
 
 import numpy as np
 import pandas as pd
@@ -9,11 +9,13 @@ from statistics import mean
 import matplotlib.pyplot as plt
 
 # DC Motor Parameters
-a = 7.979
-b = 44.52
+# a = 7.979  # yaw motor
+# b = 44.52  # yaw motor
+a = 8.189  # pitch motor
+b = 55.28  # pitch motor
 
 # Design Requirements
-req_Ts = 1.5
+req_Ts = 1.25
 req_OS = 20
 
 # Calculate Design Point s_d
@@ -52,11 +54,13 @@ print(OLTF)
 
 # generate the RL for positive K
 rl_plot = ct.root_locus_plot(OLTF)
-rl_plot.set_plot_title("Root Locus")
+rl_plot.set_plot_title("PI Controller Root Locus")
+plt.xlabel("Real Axis (sec$^{-1}$)")
+plt.ylabel("Imaginary Axis (sec$^{-1}$)")
 
-T = ct.feedback(K*OLTF)
-t = np.linspace(0, 2, 1000)
-x, y = ct.step_response(T, t)
+T = ct.feedback(K*OLTF)  # cascade gain and OLTF
+t = np.linspace(0, 3, 1000)  # time interval 0-3sec to compute response
+x, y = ct.step_response(T*10, t)  # compute 10 deg step response
 plt.figure(figsize=(10, 5))
 plt.plot(x, y)
 plt.title("Step Response")
