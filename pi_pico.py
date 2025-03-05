@@ -19,13 +19,11 @@ yaw_motor = Motor(9, 10)
 pitch_motor = Motor(12, 13)
 
 # Initialize controllers
-yaw_control = Controller(yaw_motor, P=1, I=0.1, sampling_rate=sampling_rate, deadzone=[0.2,-0.2])
-pitch_control = Controller(pitch_motor, P=1, I=1.9, sampling_rate=sampling_rate, deadzone=[0.21,-0.19])
-
-# try 0.21 for pitch deadzone
-#  TUNE YAW MOTORRRR
+yaw_control = Controller(yaw_motor, P=1.2, I=1.75, sampling_rate=sampling_rate, deadzone=[0.2,-0.2])
+pitch_control = Controller(pitch_motor, P=1.1, I=1.9, sampling_rate=sampling_rate, deadzone=[0.21,-0.19])
 
 const_speed = 0.6  # set motor duty cycle speed
+duty_cycle = 0 # set motor duty cycle
 
 # Decode serial data
 def read_serial():
@@ -51,13 +49,14 @@ while not data:
     time.sleep(0.5)
     
 # Move motor based on serial keyboard signals
-move = False
+move_yaw = False
+move_pitch = False
 while True:
     # Read imu data and send through serial port
     yaw, pitch, roll = imu.euler()
     x_omega, y_omega, z_omega = imu.gyro()
-    print(f"Yaw: {wrap2pi(yaw)} Pitch: {pitch} Yaw Velocity: {z_omega} Pitch Velocity: {y_omega}")
-    tty.print(f"{wrap2pi(yaw)},{pitch},{z_omega},{y_omega}")
+    print(f"Yaw: {wrap2pi(yaw)} Pitch: {pitch} Yaw Velocity: {z_omega} Pitch Velocity: {y_omega} Yaw Duty Cycle: {yaw_control.duty_cycle} Pitch Duty Cycle: {pitch_control.duty_cycle}")
+    tty.print(f"{wrap2pi(yaw)},{pitch},{z_omega},{y_omega},{yaw_control.duty_cycle},{pitch_control.duty_cycle}")
     
     # Check if serial data was recieved and control motors
     if data:
@@ -78,16 +77,17 @@ while True:
             yaw_motor.move(0)
             break
         elif data == "ENTER":  # PID Control
-            move = True        
+            move_yaw = True
+            move_pitch = True
         data = None  # reset data variable
-    
-    elif move:
-#         yaw_control.move_to_angle(wrap2pi(yaw), 30, z_omega)
-#         pitch_control.move_to_angle(pitch, 10)
-#         if yaw_control.move_to_angle(wrap2pi(yaw), 30, z_omega):
-#             yaw_motor.move(0)
-#             move = False
-        if pitch_control.move_to_angle(pitch, -5):
+
+    if move_yaw:
+        if yaw_control.move_to_angle(wrap2pi(yaw), 40):
+            yaw_motor.move(0)
+            move_yaw = False
+    if move_pitch:
+        if pitch_control.move_to_angle(pitch, 20) and not move_yaw:
             pitch_motor.move(0)
-            move = False
+            move_pitch = False
+
     time.sleep(1/sampling_rate)  # control loop rate

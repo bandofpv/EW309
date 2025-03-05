@@ -12,6 +12,7 @@ class Controller:
         self.deadzone = deadzone  # deadzone threshold
         self.previous_errors = [10, 10]
         self.start_time = None
+        self.duty_cycle = 0
         
     def move_to_angle(self, current_angle, desired_angle):
         if not self.start_time:
@@ -36,20 +37,22 @@ class Controller:
         elif input_voltage < -12:
             input_voltage = -12
 
-        duty_cycle = input_voltage/12  # calculate duty cycle 
-        self.motor.move(duty_cycle)
+        self.duty_cycle = input_voltage/12  # calculate duty cycle 
+        self.motor.move(self.duty_cycle)
 
-        print(desired_angle, current_angle, error, input_voltage, duty_cycle)
+        print(desired_angle, current_angle, error, input_voltage, self.duty_cycle)
         if self.reached_target():
             print("REACHED TARGET")
             self.integral = 0  # reset integral
+            self.duty_cycle = 0  # reset duty cycle
             self.previous_errors = [10, 10]  # reset previous_errors
             self.start_time = None
             return True
         
-    def reached_target(self, threshold=0.5729578, timeout=5):
+    def reached_target(self, threshold=0.5729578, timeout=3):
         if (self.previous_errors[-1] > 0 and self.previous_errors[-2] > 0) or \
            (self.previous_errors[-1] < 0 and self.previous_errors[-2] < 0):
             return abs(self.previous_errors[-1] + self.previous_errors[-2])/2 < threshold
         elif abs(self.start_time - time.time()) > timeout:
+            print("TIMEOUT")
             return True

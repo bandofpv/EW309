@@ -1,4 +1,4 @@
-# find_deadzone_pc.py
+# find_deadzone_data_analysis.py
 
 import numpy as np
 import pandas as pd
@@ -24,11 +24,11 @@ def find_peak_indices(data, threshold):
 
 peaks = find_peak_indices(data['motor_voltage'], 2)
 deadzones = data['motor_voltage'].values[peaks] / 12
-print(deadzones)
+print("Deadzones:", deadzones)
 
 time_stamps = np.arange(len(data['yaw_velocity'])) / sampling_rate  # calculate time stamps for plot
 
-# Subplot for Position vs. Time
+# Subplot for Angular Velocity vs. Time
 plt.figure(figsize=(10, 5))
 plt.subplot(2, 1, 1)
 plt.plot(time_stamps, data['yaw_velocity'], marker='.', label='Yaw')
@@ -39,7 +39,7 @@ plt.ylabel("Angular Velocity (degrees/sec)")
 plt.grid(True)
 plt.legend()
 
-# Subplot for Angular Velocity
+# Subplot for Motor Voltage
 plt.subplot(2, 1, 2)
 plt.plot(time_stamps, data['motor_voltage'], marker='.')
 plt.title("Motor Voltage vs. Time")

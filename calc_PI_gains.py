@@ -41,20 +41,20 @@ G_c_sd = mtlb.evalfr(G_c, s_d)
 # Evaluate Gain K
 K = abs(1/(G_c_sd*G_p_sd))
 
-print(s_d)
-print(G_p)
-print(G_p_sd)
-print(phi_ULG, phi_PI, z_PI)
-print(G_c, G_c_sd)
-print(K, K*z_PI)
-
 OLTF = G_c*G_p # blocks in cascade
 
-print(OLTF)
+print("s_d:", s_d)
+# print(G_p)
+# print(G_p_sd)
+# print(phi_ULG, phi_PI, z_PI)
+# print(G_c, G_c_sd)
+# print(OLTF)
+print("K_p:", K)
+print("K_i:", K*z_PI)
 
 # generate the RL for positive K
 rl_plot = ct.root_locus_plot(OLTF)
-rl_plot.set_plot_title("PI Controller Root Locus")
+rl_plot.set_plot_title("PI Controller Root Locus (Pitch Motor)")
 plt.xlabel("Real Axis (sec$^{-1}$)")
 plt.ylabel("Imaginary Axis (sec$^{-1}$)")
 
@@ -63,7 +63,7 @@ t = np.linspace(0, 3, 1000)  # time interval 0-3sec to compute response
 x, y = ct.step_response(T*10, t)  # compute 10 deg step response
 plt.figure(figsize=(10, 5))
 plt.plot(x, y)
-plt.title("Step Response")
+plt.title("Step Response (Pitch Motor)")
 plt.xlabel("Time (seconds)")
 plt.ylabel("Position (deg)")
 plt.legend()
