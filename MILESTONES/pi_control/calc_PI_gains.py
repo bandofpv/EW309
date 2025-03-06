@@ -9,10 +9,10 @@ from statistics import mean
 import matplotlib.pyplot as plt
 
 # DC Motor Parameters
-# a = 7.979  # yaw motor
-# b = 44.52  # yaw motor
-a = 8.189  # pitch motor
-b = 55.28  # pitch motor
+a = 7.979  # yaw motor
+b = 44.52  # yaw motor
+# a = 8.189  # pitch motor
+# b = 55.28  # pitch motor
 
 # Design Requirements
 req_Ts = 1.25
@@ -46,7 +46,7 @@ OLTF = G_c*G_p # blocks in cascade
 print("s_d:", s_d)
 # print(G_p)
 # print(G_p_sd)
-# print(phi_ULG, phi_PI, z_PI)
+print(phi_ULG, phi_PI, z_PI)
 # print(G_c, G_c_sd)
 # print(OLTF)
 print("K_p:", K)
