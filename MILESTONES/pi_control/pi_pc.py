@@ -11,7 +11,6 @@ import matplotlib.pyplot as plt
 ser = serial.Serial('COM21', 9600)  # open serial DATA port
 
 sampling_rate = 10  # Hz
-step_duration = 1  # seconds
 interval = 1  # seconds between step inputs
 yaw_data = []
 pitch_data = []

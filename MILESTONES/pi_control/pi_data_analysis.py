@@ -4,13 +4,12 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 
-data = pd.read_csv("data.csv")
-# data = pd.read_csv("data1.csv")
+# data = pd.read_csv("data.csv")
+data = pd.read_csv("data1.csv")
 
 # Manually set values
-start_index = 6; end_index = 27; yaw_des = 20; pitch_des = 10  # data.csv
-# start_index = 6; end_index = 38;
-yaw_des = 40; pitch_des = 20  # data1.csv
+# start_index = 6; end_index = 27; yaw_des = 20; pitch_des = 10  # data.csv
+start_index = 6; end_index = 39; yaw_des = 40; pitch_des = 20  # data1.csv
 
 sampling_rate = 10  # Hz
 
@@ -47,8 +46,6 @@ plt.figure(figsize=(10, 5))
 plt.subplot(2, 1, 1)
 plt.plot(time_stamps, data['yaw'][start_index:end_index], marker='.', label='Yaw')
 plt.plot(time_stamps, data['pitch'][start_index:end_index], marker='.', label='Pitch')
-plt.axhline(data['pitch'][end_index]*1.02)
-plt.axhline(data['pitch'][end_index]*0.98)
 plt.title("Position vs. Time")
 plt.xlabel("Time (sec)")
 plt.ylabel("Position (deg)")
@@ -57,8 +54,8 @@ plt.legend()
 
 # Subplot for Duty Cycle
 plt.subplot(2, 1, 2)
-plt.plot(time_stamps, data['yaw_duty_cycle'][start_index:end_index], marker='.', label='Yaw')
-plt.plot(time_stamps, data['pitch_duty_cycle'][start_index:end_index], marker='.', label='Pitch')
+plt.plot(time_stamps, data['yaw_duty_cycle'][start_index:end_index]*100, marker='.', label='Yaw')
+plt.plot(time_stamps, data['pitch_duty_cycle'][start_index:end_index]*100, marker='.', label='Pitch')
 plt.title("Duty Cycle vs. Time")
 plt.xlabel("Time (sec)")
 plt.ylabel("Duty Cycle (%)")

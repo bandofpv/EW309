@@ -41,10 +41,10 @@ plt.legend()
 
 # Subplot for Motor Voltage
 plt.subplot(2, 1, 2)
-plt.plot(time_stamps, data['motor_voltage'], marker='.')
-plt.title("Motor Voltage vs. Time")
+plt.plot(time_stamps, (data['motor_voltage']/12)*100, marker='.')
+plt.title("Duty Cycle vs. Time")
 plt.xlabel("Time (sec)")
-plt.ylabel("Motor Voltage (V)")
+plt.ylabel("Duty Cycle (%)")
 plt.grid(True)
 
 # Display plot
