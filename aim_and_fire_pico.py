@@ -76,6 +76,7 @@ while True:
         elif data == "LEFT":  # turn yaw motor left
             yaw_motor.move(-const_speed)
         elif data == "SPACE":  # stop motors
+            fire_system.spin_up()
             pitch_motor.move(0)
             yaw_motor.move(0)
         elif data == "QUIT":  # stop motors and break
@@ -83,9 +84,7 @@ while True:
             yaw_motor.move(0)
             break
         elif data == "ENTER":  # PID Control
-            fire_system.spin_up()
             shoot = True
-            spin = True
             move_yaw = True
             move_pitch = True
         data = None  # reset data variable
@@ -99,11 +98,11 @@ while True:
             pitch_motor.move(0)
             move_pitch = False
             
-    if spin:
-        fire_system.spin_up()
     if shoot:
         fire_system.fire_balls()
-        if fire_system.ball_shot():
+#         if fire_system.ball_shot():
+#             shoot = False
+        if fire_system.shot_count > 2:
             shoot = False
             
     time.sleep(1/sampling_rate)  # control loop rate
