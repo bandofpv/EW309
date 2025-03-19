@@ -17,24 +17,16 @@ class Fire:
         self.shot_count = 0
         self.slope = 0
 
-        # Motor drive
-        self.motor1 = Pin(15, Pin.OUT)
-#         self.motor1 = PWM(Pin(15))  # set motor pin
-#         self.motor1.freq(1000)  # set frequency to 1KHz
-#         self.motor1.duty_u16(0)  # 0-65535 for duty cycle range 0-100
-
-        # Feed belt motor 
-        self.motor2 = PWM(Pin(14))  # set motor pin
-        self.motor2.freq(1000)  # set frequency to 1KHz
-        self.motor2.duty_u16(0)  # 0-65535 for duty cycle range 0-100
+        self.motor1 = Pin(15, Pin.OUT)  # counter rotating wheel motor
+        self.motor2 = Pin(14, Pin.OUT)  # feed belt motor
         
-#         self.motor1.duty_u16(int(1 * 65535))
-        self.motor1.value(1)
-        time.sleep(3)
+        # Wait for counter rotating wheel motor to spin all the way up
+        while self.read_current() > 2000 or self.read_current() < 1000:
+            self.motor1.value(1)  # spin up wheel motor
+            self.motor2.value(0)  # stop feed belt motor
+            time.sleep(self.sampling_time)
         
-        # TODO: Test if this works!!!
-        
-        # TODO: TEST DIFFERENT SLEEP VALUES
+        print("READY TO FIRE!!!")
 
     def read_current(self):
         """Read current from INA260."""
@@ -51,7 +43,7 @@ class Fire:
             return math.nan  # Return nan if read fails
         
     def spin_up(self):
-        self.motor1.duty_u16(int(1 * 65535))
+        self.motor1.value(1)
 
     def count_shots(self):
         self.read_current()
@@ -67,5 +59,5 @@ class Fire:
             self.in_shot = False
         
     def fire_balls(self):
-        self.motor2.duty_u16(65535)  # power up feed belt
+        self.motor2.value(1)  # power up feed belt
         self.count_shots()

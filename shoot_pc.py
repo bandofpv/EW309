@@ -74,7 +74,6 @@ plt.title("Slope vs. Time")
 plt.xlabel("Time (seconds)")
 plt.ylabel("Slope (amps/sec)")
 plt.grid(True)
-plt.legend()
 
 # Subplot for Shot Count vs. Time
 plt.subplot(2, 1, 2)
@@ -83,11 +82,10 @@ plt.title("Shot Count vs. Time")
 plt.xlabel("Time (seconds)")
 plt.ylabel("Shot Count")
 plt.grid(True)
-plt.legend()
 
 # Display plot
 plt.tight_layout()
 plt.show()
 
 df = pd.DataFrame({'time': time_stamps, 'current': current_data, 'shot_count': shot_count_data, 'slope': slope_data})
-df.to_csv("data.csv")
+df.to_csv("data1.csv")

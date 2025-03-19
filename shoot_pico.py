@@ -7,7 +7,6 @@ import time
 
 tty = ttyacm.open(1)  # open serial DATA port
 sampling_rate = 60
-
 fire_system = Fire(sampling_rate)
 
 # Decode serial data
@@ -23,7 +22,7 @@ _thread.start_new_thread(read_serial, ())
 data = False
 print("Waiting for keyboard input...")    
 while not data:
-    time.sleep(0.5)
+    time.sleep(0.1)
     
 # Move motor based on serial keyboard signals
 fire = False
@@ -45,18 +44,18 @@ while True:
         elif data == "SPACE":  # stop motors
             pass
         elif data == "QUIT":  # stop motors and break
-            fire_system.motor1.duty_u16(0)
-            fire_system.motor2.duty_u16(0)
+            fire_system.motor1.value(0)
+            fire_system.motor2.value(0)
             break
-        elif data == "ENTER":  # PID Control
+        elif data == "ENTER":  # shoot balls
             fire = True
         data = None  # reset data variable
 
     if fire:
         fire_system.fire_balls()
     
-    if fire_system.shot_count == 4:
-        fire_system.motor1.duty_u16(0)
-        fire_system.motor2.duty_u16(0)
+    if fire_system.shot_count == 4:  # shoot only 4 balls then stop motors
+        fire_system.motor1.value(0)
+        fire_system.motor2.value(0)
 
     time.sleep(1/sampling_rate)  # control loop rate

@@ -9,7 +9,7 @@ from controller import Controller
 from fire import Fire
 
 tty = ttyacm.open(1)  # open serial DATA port
-sampling_rate = 10  # Hz
+sampling_rate = 60  # Hz
 
 # Define SCL & SDA pins for BNO055 IMU
 i2c1 = machine.I2C(1, scl=machine.Pin(3), sda=machine.Pin(2))
@@ -18,6 +18,9 @@ imu = BNO055(i2c1)
 # Create Motor instances
 yaw_motor = Motor(9, 10)
 pitch_motor = Motor(12, 13)
+
+# Create Fire System instance
+fire_system = Fire(sampling_rate)
 
 # Initialize controllers
 yaw_control = Controller(yaw_motor, P=1.2, I=1.75, sampling_rate=sampling_rate, deadzone=[0.2,-0.2])
@@ -47,22 +50,19 @@ _thread.start_new_thread(read_serial, ())
 data = False
 print("Waiting for keyboard input...")    
 while not data:
-    time.sleep(0.5)
+    time.sleep(0.1)
     
 # Move motor based on serial keyboard signals
 move_yaw = False
 move_pitch = False
 shoot = False
-spin = False
-
-fire_system = Fire()
 
 while True:
     # Read imu data and send through serial port
     yaw, pitch, roll = imu.euler()
     x_omega, y_omega, z_omega = imu.gyro()
-    print(f"Yaw: {wrap2pi(yaw)} Pitch: {pitch} Yaw Velocity: {z_omega} Pitch Velocity: {y_omega} Yaw Duty Cycle: {yaw_control.duty_cycle} Pitch Duty Cycle: {pitch_control.duty_cycle} Fire System Current: {fire_system.current}")
-    tty.print(f"{wrap2pi(yaw)},{pitch},{z_omega},{y_omega},{yaw_control.duty_cycle},{pitch_control.duty_cycle},{fire_system.current}")
+    print(f"Yaw: {wrap2pi(yaw)} Pitch: {pitch} Yaw Velocity: {z_omega} Pitch Velocity: {y_omega} Yaw Duty Cycle: {yaw_control.duty_cycle} Pitch Duty Cycle: {pitch_control.duty_cycle} Fire System Current: {fire_system.current} Shot Count: {fire_system.shot_count} Slope: {fire_system.slope}")
+    tty.print(f"{wrap2pi(yaw)},{pitch},{z_omega},{y_omega},{yaw_control.duty_cycle},{pitch_control.duty_cycle},{fire_system.current},{fire_system.current},{fire_system.shot_count},{fire_system.slope}")
     
     # Check if serial data was recieved and control motors
     if data:
@@ -76,12 +76,13 @@ while True:
         elif data == "LEFT":  # turn yaw motor left
             yaw_motor.move(-const_speed)
         elif data == "SPACE":  # stop motors
-            fire_system.spin_up()
             pitch_motor.move(0)
             yaw_motor.move(0)
         elif data == "QUIT":  # stop motors and break
             pitch_motor.move(0)
             yaw_motor.move(0)
+            fire_system.motor1.value(0)
+            fire_system.motor2.value(0)
             break
         elif data == "ENTER":  # PID Control
             shoot = True
@@ -100,9 +101,8 @@ while True:
             
     if shoot:
         fire_system.fire_balls()
-#         if fire_system.ball_shot():
-#             shoot = False
-        if fire_system.shot_count > 2:
-            shoot = False
+    
+    if fire_system.shot_count == 4:  # shoot only 4 balls then feed belt motor
+        fire_system.motor2.value(0)
             
     time.sleep(1/sampling_rate)  # control loop rate
