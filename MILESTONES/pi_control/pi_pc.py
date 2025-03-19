@@ -103,4 +103,4 @@ plt.tight_layout()
 plt.show()
 
 df = pd.DataFrame({'time': time_stamps, 'yaw': yaw_data, 'pitch': pitch_data, 'yaw_velocity': yaw_velocity_data, 'pitch_velocity': pitch_velocity_data, 'yaw_duty_cycle': yaw_duty_cycle_data, 'pitch_duty_cycle': pitch_duty_cycle_data})
-df.to_csv("data2.csv")
+df.to_csv("data1.csv")

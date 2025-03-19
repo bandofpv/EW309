@@ -8,14 +8,14 @@ import matplotlib.pyplot as plt
 data = pd.read_csv("data1.csv")
 
 # Manually set values
-# start_index = 6; end_index = 27; yaw_des = 20; pitch_des = 10  # data.csv
-start_index = 6; end_index = 39; yaw_des = 40; pitch_des = 20  # data1.csv
+# start_index = 27; end_index = 90; yaw_des = 20; pitch_des = 10  # data.csv
+start_index = 21; end_index = 150; yaw_des = 40; pitch_des = 20  # data1.csv
 
-sampling_rate = 10  # Hz
+sampling_rate = 60  # Hz
 
 # Calculate settling of step response (time of intersection at +/- 2% final value)
 def calc_Ts(time, position, final_value):
-    x = np.linspace(time[0], time[-1], 1000)  
+    x = np.linspace(time[10], time[-1], 1000)  
     y = np.interp(x, time, position)  # interpolate positions
     top_difference = np.abs(y - (1.02*final_value))  # calculate difference between position and +2% of final value
     bottom_difference = np.abs(y - (0.98*final_value))  # calculate difference between position and -2% of final value
