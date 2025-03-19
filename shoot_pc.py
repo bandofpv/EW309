@@ -1,5 +1,3 @@
-# aim_and_fire_pc
-
 import time
 import serial
 import keyboard
@@ -10,27 +8,19 @@ import matplotlib.pyplot as plt
 
 ser = serial.Serial('COM21', 9600)  # open serial DATA port
 
-sampling_rate = 10  # Hz
-yaw_data = []
-pitch_data = []
-yaw_velocity_data = []
-pitch_velocity_data = []
-yaw_duty_cycle_data = []
-pitch_duty_cycle_data = []
-fire_system_current_data = []
+sampling_rate = 60  # Hz
+current_data = []
+shot_count_data = []
+slope_data = []
 
 # Decode serial data
 def read_serial(stop_event):
     while not stop_event.is_set():
         data = ser.readline().strip().decode("utf-8").split(',')
-        yaw_data.append(float(data[0]))
-        pitch_data.append(float(data[1]))
-        yaw_velocity_data.append(-float(data[2]))
-        pitch_velocity_data.append(-float(data[3]))
-        yaw_duty_cycle_data.append(float(data[4]))
-        pitch_duty_cycle_data.append(float(data[5]))
-        fire_system_current_data.append(float(data[6]))
-        print(f"RECEIVED: Yaw: {float(data[0])} Pitch: {data[1]} Yaw Velocity: {data[2]} Pitch Velocity: {data[3]} Yaw Duty Cycle: {data[4]} Pitch Duty Cycle: {data[5]} Fire System Current: {data[6]}")
+        current_data.append(float(data[0]))
+        shot_count_data.append(float(data[1]))
+        slope_data.append(float(data[2]))
+        print(f"RECEIVED: Current: {data[0]} Shot Count: {data[1]} Slope: {data[2]}")
 
 # Start read_serial on seperate thread
 stop_event = threading.Event()
@@ -59,10 +49,9 @@ while True:
         print('Enter button pressed')
         serial_thread.start()  # start reading serial port
         ser.write(b"SPACE\n")  # send initial signal
-        time.sleep(3)  # wait for initialization
-        # do stuff
+        time.sleep(1)  # wait for initialization
         ser.write(b"ENTER\n")
-        time.sleep(10)
+        time.sleep(3)
         ser.write(b"QUIT\n")
         stop_event.set()  # stop serial_read thread
         serial_thread.join()
@@ -74,40 +63,31 @@ while True:
         break
 
     time.sleep(1/sampling_rate)  # control loop rate
+    
+time_stamps = np.arange(len(current_data)) / sampling_rate  # calculate time_stamps for plot
 
-time_stamps = np.arange(len(yaw_data)) / sampling_rate  # calculate time_stamps for plot
-
-# Subplot for Position vs. Time
+# Subplot for Slope vs. Time
 plt.figure(figsize=(10, 5))
 plt.subplot(2, 1, 1)
-plt.plot(time_stamps, yaw_data, marker='.', label='Yaw')
-plt.plot(time_stamps, pitch_data, marker='.', label='Pitch')
-plt.title("Position vs. Time")
+plt.plot(time_stamps, slope_data, marker='.')
+plt.title("Slope vs. Time")
 plt.xlabel("Time (seconds)")
-plt.ylabel("Position (degrees)")
+plt.ylabel("Slope (amps/sec)")
 plt.grid(True)
 plt.legend()
 
-# Subplot for Angular Velocity
+# Subplot for Shot Count vs. Time
 plt.subplot(2, 1, 2)
-plt.plot(time_stamps, yaw_velocity_data, marker='.', label='Yaw')
-plt.plot(time_stamps, pitch_velocity_data, marker='.', label='Pitch')
-plt.title("Angular Velocity vs. Time")
+plt.plot(time_stamps, shot_count_data, marker='.')
+plt.title("Shot Count vs. Time")
 plt.xlabel("Time (seconds)")
-plt.ylabel("Angular Velocity (degrees/sec)")
+plt.ylabel("Shot Count")
 plt.grid(True)
-plt.legend( )
+plt.legend()
 
-plt.figure(figsize=(10, 5))
-plt.plot(time_stamps, fire_system_current_data, marker='.')
-plt.title("Current vs. Time")
-plt.xlabel("Time (seconds)")
-plt.ylabel("Current (mA)")
-plt.grid(True)
- 
 # Display plot
 plt.tight_layout()
 plt.show()
 
-df = pd.DataFrame({'time': time_stamps, 'yaw': yaw_data, 'pitch': pitch_data, 'yaw_velocity': yaw_velocity_data, 'pitch_velocity': pitch_velocity_data, 'yaw_duty_cycle': yaw_duty_cycle_data, 'pitch_duty_cycle': pitch_duty_cycle_data}, 'fire_system_current': fire_system_current_data)
+df = pd.DataFrame({'time': time_stamps, 'current': current_data, 'shot_count': shot_count_data, 'slope': slope_data})
 df.to_csv("data.csv")
