@@ -8,7 +8,7 @@ from motor import Motor
 from controller import Controller
 
 tty = ttyacm.open(1)  # open serial DATA port
-sampling_rate = 10  # Hz
+sampling_rate = 60  # Hz
 
 # Define SCL & SDA pins for BNO055 IMU
 i2c1 = machine.I2C(1, scl=machine.Pin(3), sda=machine.Pin(2))
@@ -19,8 +19,10 @@ yaw_motor = Motor(9, 10)
 pitch_motor = Motor(12, 13)
 
 # Initialize controllers
-yaw_control = Controller(yaw_motor, P=1.2, I=1.75, sampling_rate=sampling_rate, deadzone=[0.2,-0.2])
-pitch_control = Controller(pitch_motor, P=1.1, I=1.9, sampling_rate=sampling_rate, deadzone=[0.21,-0.19])
+# yaw_control = Controller(yaw_motor, P=1.2, I=1.75, sampling_rate=sampling_rate, deadzone=[0.2,-0.2])
+# pitch_control = Controller(pitch_motor, P=1.1, I=1.9, sampling_rate=sampling_rate, deadzone=[0.21,-0.19])
+yaw_control = Controller(yaw_motor, P=0.7, I=2.8, sampling_rate=sampling_rate, deadzone=[0.2,-0.2])
+pitch_control = Controller(pitch_motor, P=0.8, I=3.1, sampling_rate=sampling_rate, deadzone=[0.21,-0.19])
 
 const_speed = 0.6  # set motor duty cycle speed
 duty_cycle = 0 # set motor duty cycle
@@ -82,11 +84,11 @@ while True:
         data = None  # reset data variable
 
     if move_yaw:
-        if yaw_control.move_to_angle(wrap2pi(yaw), 40):
+        if yaw_control.move_to_angle(wrap2pi(yaw), 20):
             yaw_motor.move(0)
             move_yaw = False
     if move_pitch:
-        if pitch_control.move_to_angle(pitch, 20) and not move_yaw:
+        if pitch_control.move_to_angle(pitch, 10) and not move_yaw:
             pitch_motor.move(0)
             move_pitch = False
 

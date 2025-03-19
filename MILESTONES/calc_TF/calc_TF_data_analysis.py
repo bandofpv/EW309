@@ -119,6 +119,7 @@ plt.grid(True)
 print(f"Final value: {final_value}")
 
 # Calculate yaw transfer function
+print("Yaw Time Constant:", mean([tau1, tau2]))
 a = 1 / mean([tau1, tau2])  # calulate a coefficient using average tau
 b = mean([SSG1, SSG2]) * a  # calulate b coefficient using average SSG
 num = b  # numerator coefficient b
@@ -170,6 +171,7 @@ plt.tight_layout()
 print(f"Final value: {final_value}")
 
 # Calculate pitch transfer function
+print("Pitch Time Constant:", mean([tau1, tau2]))
 a = 1 / mean([tau1, tau2])  # calulate a coefficient using average tau
 b = mean([SSG1, SSG2]) * a  # calulate b coefficient using average SSG
 num = b  # numerator coefficient b
