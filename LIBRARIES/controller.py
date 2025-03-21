@@ -50,9 +50,11 @@ class Controller:
             return True
         
     def reached_target(self, threshold=0.5729578, timeout=3):
+        # Return True if error is below threshold
         if (self.previous_errors[-1] > 0 and self.previous_errors[-2] > 0) or \
            (self.previous_errors[-1] < 0 and self.previous_errors[-2] < 0):
             return abs(self.previous_errors[-1] + self.previous_errors[-2])/2 < threshold
+        # Return True if exceeds timeout (sec)
         elif abs(self.start_time - time.time()) > timeout:
             print("TIMEOUT")
             return True

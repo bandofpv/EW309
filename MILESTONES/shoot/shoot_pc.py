@@ -1,3 +1,5 @@
+# shoot_pc.py
+
 import time
 import serial
 import keyboard
@@ -88,4 +90,4 @@ plt.tight_layout()
 plt.show()
 
 df = pd.DataFrame({'time': time_stamps, 'current': current_data, 'shot_count': shot_count_data, 'slope': slope_data})
-df.to_csv("data1.csv")
+df.to_csv("data.csv")

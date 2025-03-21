@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 data = pd.read_csv("data.csv")
 sampling_rate = 60  # Hz
 
-indices = data['time'] <= 1.6
+indices = data['time'] <= 2.6
 
 # Subplot for Slope vs. Time
 plt.figure(figsize=(10, 5))

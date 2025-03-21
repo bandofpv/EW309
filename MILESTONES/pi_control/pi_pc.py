@@ -18,9 +18,11 @@ yaw_velocity_data = []
 pitch_velocity_data = []
 yaw_duty_cycle_data = []
 pitch_duty_cycle_data = []
+time_data = []
 
 # Decode serial data
 def read_serial(stop_event):
+    start_time = time.perf_counter()
     while not stop_event.is_set():
         data = ser.readline().strip().decode("utf-8").split(',')
         yaw_data.append(float(data[0]))
@@ -29,7 +31,9 @@ def read_serial(stop_event):
         pitch_velocity_data.append(-float(data[3]))
         yaw_duty_cycle_data.append(float(data[4]))
         pitch_duty_cycle_data.append(float(data[5]))
-        print(f"RECEIVED: Yaw: {float(data[0])} Pitch: {data[1]} Yaw Velocity: {data[2]} Pitch Velocity: {data[3]} Yaw Duty Cycle: {data[4]} Pitch Duty Cycle: {data[5]}")
+        time_stamp = time.perf_counter() - start_time
+        time_data.append(time_stamp)
+        print(f"RECEIVED: Yaw: {float(data[0])} Pitch: {data[1]} Yaw Velocity: {data[2]} Pitch Velocity: {data[3]} Yaw Duty Cycle: {data[4]} Pitch Duty Cycle: {data[5]} Time: {time_stamp}")
 
 # Start read_serial on seperate thread
 stop_event = threading.Event()
@@ -75,13 +79,11 @@ while True:
 
     time.sleep(1/sampling_rate)  # control loop rate
 
-time_stamps = np.arange(len(yaw_data)) / sampling_rate  # calculate time_stamps for plot
-
 # Subplot for Position vs. Time
 plt.figure(figsize=(10, 5))
 plt.subplot(2, 1, 1)
-plt.plot(time_stamps, yaw_data, marker='.', label='Yaw')
-plt.plot(time_stamps, pitch_data, marker='.', label='Pitch')
+plt.plot(time_data, yaw_data, marker='.', label='Yaw')
+plt.plot(time_data, pitch_data, marker='.', label='Pitch')
 plt.title("Position vs. Time")
 plt.xlabel("Time (seconds)")
 plt.ylabel("Position (degrees)")
@@ -90,17 +92,17 @@ plt.legend()
 
 # Subplot for Angular Velocity
 plt.subplot(2, 1, 2)
-plt.plot(time_stamps, yaw_velocity_data, marker='.', label='Yaw')
-plt.plot(time_stamps, pitch_velocity_data, marker='.', label='Pitch')
+plt.plot(time_data, yaw_velocity_data, marker='.', label='Yaw')
+plt.plot(time_data, pitch_velocity_data, marker='.', label='Pitch')
 plt.title("Angular Velocity vs. Time")
 plt.xlabel("Time (seconds)")
 plt.ylabel("Angular Velocity (degrees/sec)")
 plt.grid(True)
-plt.legend( )
+plt.legend()
  
 # Display plot
 plt.tight_layout()
 plt.show()
 
-df = pd.DataFrame({'time': time_stamps, 'yaw': yaw_data, 'pitch': pitch_data, 'yaw_velocity': yaw_velocity_data, 'pitch_velocity': pitch_velocity_data, 'yaw_duty_cycle': yaw_duty_cycle_data, 'pitch_duty_cycle': pitch_duty_cycle_data})
-df.to_csv("data1.csv")
+df = pd.DataFrame({'time': time_data, 'yaw': yaw_data, 'pitch': pitch_data, 'yaw_velocity': yaw_velocity_data, 'pitch_velocity': pitch_velocity_data, 'yaw_duty_cycle': yaw_duty_cycle_data, 'pitch_duty_cycle': pitch_duty_cycle_data})
+df.to_csv("data3.csv")

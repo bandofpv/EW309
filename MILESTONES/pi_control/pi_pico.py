@@ -21,7 +21,7 @@ pitch_motor = Motor(12, 13)
 # Initialize controllers
 # yaw_control = Controller(yaw_motor, P=1.2, I=1.75, sampling_rate=sampling_rate, deadzone=[0.2,-0.2])
 # pitch_control = Controller(pitch_motor, P=1.1, I=1.9, sampling_rate=sampling_rate, deadzone=[0.21,-0.19])
-yaw_control = Controller(yaw_motor, P=0.7, I=3.1, sampling_rate=sampling_rate, deadzone=[0.2,-0.2])
+yaw_control = Controller(yaw_motor, P=0.8, I=3.3, sampling_rate=sampling_rate, deadzone=[0.2,-0.2])
 pitch_control = Controller(pitch_motor, P=0.8, I=3.2, sampling_rate=sampling_rate, deadzone=[0.21,-0.19])
 
 const_speed = 0.6  # set motor duty cycle speed

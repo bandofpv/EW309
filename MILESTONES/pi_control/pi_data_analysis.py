@@ -4,14 +4,12 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 
-# data = pd.read_csv("data.csv")
-data = pd.read_csv("data1.csv")
+data = pd.read_csv("data.csv")
+# data = pd.read_csv("data1.csv")
 
 # Manually set values
-# start_index = 27; end_index = 90; yaw_des = 20; pitch_des = 10  # data.csv
-start_index = 21; end_index = 150; yaw_des = 40; pitch_des = 20  # data1.csv
-
-sampling_rate = 60  # Hz
+start_index = 36; end_index = 100; yaw_des = 20; pitch_des = 10  # data.csv
+# start_index = 35; end_index = 150; yaw_des = 40; pitch_des = 20  # data1.csv
 
 # Calculate settling of step response (time of intersection at +/- 2% final value)
 def calc_Ts(time, position, final_value):
@@ -25,7 +23,9 @@ def calc_Ts(time, position, final_value):
     bottom_approx_time = x[bottom_approx_index]  # calculate the settling time
     return max(top_approx_time, bottom_approx_time)  # return latest value
 
-time_stamps = np.arange(len(data['yaw'][start_index:end_index])) / sampling_rate  # calculate time stamps for plot
+time_stamps = data['time'].iloc[start_index:end_index].reset_index(drop=True)
+time_stamps -= time_stamps.iloc[0]
+time_stamps = time_stamps.to_numpy()
 
 yaw_SSE = yaw_des - np.mean(data['yaw'][end_index-4:end_index])
 pitch_SSE = pitch_des - np.mean(data['pitch'][end_index-4:end_index])
