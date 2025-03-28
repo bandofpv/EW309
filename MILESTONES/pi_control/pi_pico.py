@@ -16,13 +16,13 @@ imu = BNO055(i2c1)
 
 # Create Motor instances
 yaw_motor = Motor(9, 10)
-pitch_motor = Motor(12, 13)
+pitch_motor = Motor(13, 12)
 
 # Initialize controllers
 # yaw_control = Controller(yaw_motor, P=1.2, I=1.75, sampling_rate=sampling_rate, deadzone=[0.2,-0.2])
 # pitch_control = Controller(pitch_motor, P=1.1, I=1.9, sampling_rate=sampling_rate, deadzone=[0.21,-0.19])
-yaw_control = Controller(yaw_motor, P=0.8, I=3.3, sampling_rate=sampling_rate, deadzone=[0.2,-0.2])
-pitch_control = Controller(pitch_motor, P=0.8, I=3.2, sampling_rate=sampling_rate, deadzone=[0.21,-0.19])
+yaw_control = Controller(yaw_motor, P=0.9, I=3.3, sampling_rate=sampling_rate, deadzone=[0.2,-0.2])
+pitch_control = Controller(pitch_motor, P=0.9, I=3.3, sampling_rate=sampling_rate, deadzone=[0.21,-0.19])
 
 const_speed = 0.6  # set motor duty cycle speed
 duty_cycle = 0 # set motor duty cycle
@@ -56,6 +56,7 @@ move_pitch = False
 while True:
     # Read imu data and send through serial port
     yaw, pitch, roll = imu.euler()
+    pitch = -pitch
     x_omega, y_omega, z_omega = imu.gyro()
     print(f"Yaw: {wrap2pi(yaw)} Pitch: {pitch} Yaw Velocity: {z_omega} Pitch Velocity: {y_omega} Yaw Duty Cycle: {yaw_control.duty_cycle} Pitch Duty Cycle: {pitch_control.duty_cycle}")
     tty.print(f"{wrap2pi(yaw)},{pitch},{z_omega},{y_omega},{yaw_control.duty_cycle},{pitch_control.duty_cycle}")
@@ -84,11 +85,11 @@ while True:
         data = None  # reset data variable
 
     if move_yaw:
-        if yaw_control.move_to_angle(wrap2pi(yaw), 20):
+        if yaw_control.move_to_angle(wrap2pi(yaw), 15):
             yaw_motor.move(0)
             move_yaw = False
     if move_pitch:
-        if pitch_control.move_to_angle(pitch, 10) and not move_yaw:
+        if pitch_control.move_to_angle(pitch, 7) and not move_yaw:
             pitch_motor.move(0) 
             move_pitch = False
 
