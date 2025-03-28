@@ -1,7 +1,6 @@
 # Requires OAK camera attached with USB3 cable
 # depthai API vailable at: https://docs.luxonis.com/projects/api/en/latest/
 # EW309 Computer Vision, P. Frontera, March 2024
-# 
 
 import cv2
 import depthai as dai
@@ -22,7 +21,7 @@ camRgb = pipeline.createColorCamera()
 xoutRgb = pipeline.createXLinkOut()
 
 # Camera Properties
-camRgb.setResolution(dai.ColorCameraProperties.SensorResolution.THE_1080_P) #THE_1080_P)
+camRgb.setResolution(dai.ColorCameraProperties.SensorResolution.THE_1080_P) # THE_1080_P)
 camRgb.setPreviewSize(camRgb.getVideoSize()) # must match resolution, max 4K
 camRgb.setInterleaved(False)
 camRgb.setColorOrder(dai.ColorCameraProperties.ColorOrder.RGB)
@@ -94,7 +93,14 @@ with dai.Device(pipeline) as device:
 
             # Write video
             if record:
-                out.write(frame)          
+                out.write(frame)
+                
+            # Image window 
+            if cv2.waitKey(1) == ord('p'):
+                image_window_name = f"Snapshot {datetime.datetime.now().strftime('%m_%d_%H%M%S')}"
+                cv2.namedWindow(image_window_name, cv2.WINDOW_NORMAL)
+                cv2.resizeWindow(image_window_name, int(size[0]/2), int(size[1]/2)) 
+                cv2.imshow(image_window_name, frame)
 
         key = cv2.waitKey(1)
         if key == ord('q') or cv2.getWindowProperty(windowName, cv2.WND_PROP_VISIBLE) < 1:
