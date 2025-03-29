@@ -9,11 +9,11 @@ import pandas as pd
 from camera import Camera
 import matplotlib.pyplot as plt
 
-ser = serial.Serial('COM21', 9600)  # open serial DATA port
-
 fps = 30
 record = True
 sampling_rate = 60  # Hz
+
+ser = serial.Serial('COM21', 9600)  # open serial DATA port
 
 yaw_data = []
 pitch_data = []
@@ -48,10 +48,10 @@ def read_serial(stop_event):
 stop_event = threading.Event()
 serial_thread = threading.Thread(target=read_serial, args=(stop_event,))
 
-# ADD THREADING EVENT HERE!!!
-myCamera = Camera(30, True)
-myCamera.stream_video()
-
+# Start video stream on seperate thread
+oakCamera = Camera(fps, record)  # start camera instance
+camera_thread = threading.Thread(target=oakCamera.stream_video)
+camera_thread.start()
 
 # Check if arrow keys are pressed and send serial data to Pico
 print("Waiting for keyboard input...")
@@ -76,6 +76,7 @@ while True:
         print('Enter button pressed')
         serial_thread.start()  # start reading serial port
         ser.write(b"SPACE\n")  # send initial signal
+        oakCamera.snapshot_event.set() # take snapshot
         time.sleep(0.1)  # wait for initialization
         ser.write(b"ENTER\n")
         break
@@ -94,8 +95,7 @@ while True:
 
 stop_event.set()  # stop serial_read thread
 serial_thread.join()
-
-time_stamps = np.arange(len(yaw_data)) / sampling_rate  # calculate time_stamps for plot
+camera_thread.join()
 
 plt.figure(figsize=(10, 5))
 plt.plot(time_data, current_data, marker='.')

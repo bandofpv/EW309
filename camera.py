@@ -2,7 +2,8 @@
 
 import os
 import cv2
-import datetime 
+import datetime
+import threading
 import depthai as dai
 
 class Camera:
@@ -45,6 +46,9 @@ class Camera:
         
         # Print Camera Intrinsics
         self.get_camera_info()
+        
+        # Create threading event for taking snapshots
+        self.snapshot_event = threading.Event()
     
     def get_camera_info(self):
         # Start pipeline
@@ -80,30 +84,35 @@ class Camera:
             cv2.namedWindow(self.windowName, cv2.WINDOW_NORMAL)
             cv2.resizeWindow(self.windowName, int(self.video_size[0]/2), int(self.video_size[1]/2))  # resize to half output size
             
-            print('Starting Video Stream')
+            print("Starting Video Stream")
             
             while True:
                 inRgb = qRgb.get() 
 
                 if inRgb is not None:
 
-                    # Get frame
-                    frame = inRgb.getCvFrame()
+                    # Get self.frame
+                    self.frame = inRgb.getCvFrame()
                     
                     # Draw crosshairs
-                    cv2.line(frame, (0, int(self.video_size[1]/2)), (self.video_size[0],int(self.video_size[1]/2)), (0, 255, 0), 3)
-                    cv2.line(frame, (int(self.video_size[0]/2), 0), (int(self.video_size[0]/2),self.video_size[1]), (0, 255, 0), 3)
+                    cv2.line(self.frame, (0, int(self.video_size[1]/2)), (self.video_size[0],int(self.video_size[1]/2)), (0, 255, 0), 3)
+                    cv2.line(self.frame, (int(self.video_size[0]/2), 0), (int(self.video_size[0]/2),self.video_size[1]), (0, 255, 0), 3)
                     
                     # Display 
-                    cv2.imshow(self.windowName, frame)
+                    cv2.imshow(self.windowName, self.frame)
 
                     # Write video
                     if self.record:
-                        self.video_out.write(frame)
+                        self.video_out.write(self.frame)
                         
-                    # Image window 
-                    if cv2.waitKey(1) == ord('p'):
-                        self.grab_snapshot(frame)
+#                     # Snapshot window 
+#                     if cv2.waitKey(1) == ord('p'):
+#                         self.grab_snapshot()
+                     
+                    # Snapshot window  
+                    if self.snapshot_event.is_set():
+                        self.grab_snapshot()
+                        self.snapshot_event.clear()  # reset threading event
 
                 if cv2.getWindowProperty(self.windowName, cv2.WND_PROP_VISIBLE) < 1:
                     break
@@ -113,12 +122,10 @@ class Camera:
             if self.record:
                 self.video_out.release()
                 print(f"Video is located at: {self.filename}")
-            print('Complete')
+            print("Ending Video Stream")
     
-    def grab_snapshot(self, frame):
+    def grab_snapshot(self):
         image_window_name = f"Snapshot {datetime.datetime.now().strftime('%m_%d_%H%M%S')}"
         cv2.namedWindow(image_window_name, cv2.WINDOW_NORMAL)
         cv2.resizeWindow(image_window_name, int(self.video_size[0]/2), int(self.video_size[1]/2)) 
-        cv2.imshow(image_window_name, frame)
-
-        
+        cv2.imshow(image_window_name, self.frame)

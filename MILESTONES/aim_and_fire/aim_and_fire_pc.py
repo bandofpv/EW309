@@ -86,8 +86,6 @@ while True:
 stop_event.set()  # stop serial_read thread
 serial_thread.join()
 
-time_stamps = np.arange(len(yaw_data)) / sampling_rate  # calculate time_stamps for plot
-
 plt.figure(figsize=(10, 5))
 plt.plot(time_data, current_data, marker='.')
 plt.title("Current vs. Time")
@@ -114,7 +112,7 @@ plt.title("Angular Velocity vs. Time")
 plt.xlabel("Time (seconds)")
 plt.ylabel("Angular Velocity (degrees/sec)")
 plt.grid(True)
-plt.legend( )
+plt.legend()
  
 # Display plot
 plt.tight_layout()

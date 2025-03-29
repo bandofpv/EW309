@@ -17,14 +17,14 @@ imu = BNO055(i2c1)
 
 # Create Motor instances
 yaw_motor = Motor(9, 10)
-pitch_motor = Motor(12, 13)
+pitch_motor = Motor(13, 12)
 
 # Create Fire System instance
 fire_system = Fire(sampling_rate)
 
 # Initialize controllers
 yaw_control = Controller(yaw_motor, P=0.8, I=3.3, sampling_rate=sampling_rate, deadzone=[0.2,-0.2])
-pitch_control = Controller(pitch_motor, P=0.8, I=3.2, sampling_rate=sampling_rate, deadzone=[0.21,-0.19])
+pitch_control = Controller(pitch_motor, P=0.9, I=3.3, sampling_rate=sampling_rate, deadzone=[0.21,-0.19])
 
 const_speed = 0.6  # set motor duty cycle speed
 
@@ -52,12 +52,16 @@ while not data:
     time.sleep(0.1)
     
 # Target 1 Variables
+yaw1 = 20
+pitch1 = 10
 target1 = 2
 move_yaw1 = False
 move_pitch1 = False
 shoot1 = False
 
 # Target 2 Variables
+yaw2 = -20
+pitch2 = -10
 target2 = 3
 move_yaw2 = False
 move_pitch2 = False
@@ -66,8 +70,9 @@ shoot2 = False
 while True:
     # Read imu data and send through serial port
     yaw, pitch, roll = imu.euler()
+    pitch = -pitch
     x_omega, y_omega, z_omega = imu.gyro()
-    print(f"Yaw: {wrap2pi(yaw)} Pitch: {pitch} Yaw Velocity: {z_omega} Pitch Velocity: {y_omega} Yaw Duty Cycle: {yaw_control.duty_cycle} Pitch Duty Cycle: {pitch_control.duty_cycle} Fire System Current: {fire_system.current} Shot Count: {fire_system.shot_count} Slope: {fire_system.slope}")
+#     print(f"Yaw: {wrap2pi(yaw)} Pitch: {pitch} Yaw Velocity: {z_omega} Pitch Velocity: {y_omega} Yaw Duty Cycle: {yaw_control.duty_cycle} Pitch Duty Cycle: {pitch_control.duty_cycle} Fire System Current: {fire_system.current} Shot Count: {fire_system.shot_count} Slope: {fire_system.slope}")
     tty.print(f"{wrap2pi(yaw)},{pitch},{z_omega},{y_omega},{yaw_control.duty_cycle},{pitch_control.duty_cycle},{fire_system.current},{fire_system.shot_count},{fire_system.slope}")
     
     # Check if serial data was recieved and control motors
@@ -96,11 +101,11 @@ while True:
         data = None  # reset data variable
 
     if move_yaw1:
-        if yaw_control.move_to_angle(wrap2pi(yaw), 20):
+        if yaw_control.move_to_angle(wrap2pi(yaw), yaw1):
             yaw_motor.move(0)
             move_yaw1 = False
     if move_pitch1:
-        if pitch_control.move_to_angle(pitch, 10) and not move_yaw1:
+        if pitch_control.move_to_angle(pitch, pitch1) and not move_yaw1:
             pitch_motor.move(0)
             move_pitch1 = False
             shoot1 = True            
@@ -111,13 +116,14 @@ while True:
             shoot1 = False
             move_yaw2 = True
             move_pitch2 = True
+            print(f"Yaw Error: {yaw1-wrap2pi(yaw)} Pitch Error: {pitch1-pitch}")
             
     if move_yaw2:
-        if yaw_control.move_to_angle(wrap2pi(yaw), -20):
+        if yaw_control.move_to_angle(wrap2pi(yaw), yaw2):
             yaw_motor.move(0)
             move_yaw2 = False
     if move_pitch2:
-        if pitch_control.move_to_angle(pitch, -10) and not move_yaw2:
+        if pitch_control.move_to_angle(pitch, pitch2) and not move_yaw2:
             pitch_motor.move(0)
             move_pitch2 = False
             shoot2 = True            
@@ -128,6 +134,7 @@ while True:
             yaw_motor.move(0)
             fire_system.motor1.value(0)
             fire_system.motor2.value(0)
+            print(f"Yaw Error: {yaw2-wrap2pi(yaw)} Pitch Error: {pitch2-pitch}")
             break
             
     time.sleep(1/sampling_rate)  # control loop rate
@@ -137,7 +144,8 @@ start_loop_time = time.time()
 while start_loop_time - time.time() < 5: 
     # Read imu data and send through serial port
     yaw, pitch, roll = imu.euler()
+    pitch = -pitch
     x_omega, y_omega, z_omega = imu.gyro()
-    print(f"Yaw: {wrap2pi(yaw)} Pitch: {pitch} Yaw Velocity: {z_omega} Pitch Velocity: {y_omega} Yaw Duty Cycle: {yaw_control.duty_cycle} Pitch Duty Cycle: {pitch_control.duty_cycle} Fire System Current: {fire_system.current} Shot Count: {fire_system.shot_count} Slope: {fire_system.slope}")
+#     print(f"Yaw: {wrap2pi(yaw)} Pitch: {pitch} Yaw Velocity: {z_omega} Pitch Velocity: {y_omega} Yaw Duty Cycle: {yaw_control.duty_cycle} Pitch Duty Cycle: {pitch_control.duty_cycle} Fire System Current: {fire_system.current} Shot Count: {fire_system.shot_count} Slope: {fire_system.slope}")
     tty.print(f"{wrap2pi(yaw)},{pitch},{z_omega},{y_omega},{yaw_control.duty_cycle},{pitch_control.duty_cycle},{fire_system.current},{fire_system.shot_count},{fire_system.slope}")
     time.sleep(1/sampling_rate)  # control loop rate
