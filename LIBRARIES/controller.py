@@ -49,7 +49,7 @@ class Controller:
             self.start_time = None
             return True
         
-    def reached_target(self, threshold=0.5729578, timeout=3):
+    def reached_target(self, threshold=0.5729578, timeout=4):
         # Return True if error is below threshold
         if (self.previous_errors[-1] > 0 and self.previous_errors[-2] > 0) or \
            (self.previous_errors[-1] < 0 and self.previous_errors[-2] < 0):
