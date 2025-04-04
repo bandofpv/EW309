@@ -1,0 +1,112 @@
+{
+  "version": "0.4.16",
+  "flags": {},
+  "shapes": [
+    {
+      "label": "red",
+      "text": "",
+      "points": [
+        [
+          2586.535714285714,
+          1707.3869047619046
+        ],
+        [
+          2637.7261904761904,
+          1758.279761904762
+        ]
+      ],
+      "group_id": null,
+      "shape_type": "rectangle",
+      "flags": {}
+    },
+    {
+      "label": "yellow",
+      "text": "",
+      "points": [
+        [
+          2406.4761904761904,
+          1620.1845238095239
+        ],
+        [
+          2530.8809523809523,
+          1743.1011904761904
+        ]
+      ],
+      "group_id": null,
+      "shape_type": "rectangle",
+      "flags": {}
+    },
+    {
+      "label": "orange",
+      "text": "",
+      "points": [
+        [
+          1583.0408163265308,
+          1858.1224489795918
+        ],
+        [
+          1633.2448979591838,
+          1909.3469387755101
+        ]
+      ],
+      "group_id": null,
+      "shape_type": "rectangle",
+      "flags": {}
+    },
+    {
+      "label": "yellow",
+      "text": "",
+      "points": [
+        [
+          1246.2765957446807,
+          1611.7021276595744
+        ],
+        [
+          1546.2765957446807,
+          1905.851063829787
+        ]
+      ],
+      "group_id": null,
+      "shape_type": "rectangle",
+      "flags": {}
+    },
+    {
+      "label": "red",
+      "text": "",
+      "points": [
+        [
+          1589.6220472440946,
+          1289.763779527559
+        ],
+        [
+          2120.3307086614172,
+          1822.8346456692914
+        ]
+      ],
+      "group_id": null,
+      "shape_type": "rectangle",
+      "flags": {}
+    },
+    {
+      "label": "orange",
+      "text": "",
+      "points": [
+        [
+          1251.3513513513512,
+          1308.891891891892
+        ],
+        [
+          1378.6486486486485,
+          1432.4054054054054
+        ]
+      ],
+      "group_id": null,
+      "shape_type": "rectangle",
+      "flags": {}
+    }
+  ],
+  "imagePath": "IMG_4470.png",
+  "imageData": null,
+  "imageHeight": 3024,
+  "imageWidth": 4032
+}

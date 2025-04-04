@@ -1,0 +1,7 @@
+train: /home/bandofpv/EW309/DATASET/train
+val: /home/bandofpv/EW309/DATASET/valid
+nc: 3
+names: ['orange',
+        'red',
+        'yellow'
+]

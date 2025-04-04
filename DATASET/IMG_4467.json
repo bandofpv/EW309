@@ -1,0 +1,112 @@
+{
+  "version": "0.4.16",
+  "flags": {},
+  "shapes": [
+    {
+      "label": "orange",
+      "text": "",
+      "points": [
+        [
+          2719.4482758620693,
+          1324.6436781609195
+        ],
+        [
+          2852.7816091954023,
+          1454.528735632184
+        ]
+      ],
+      "group_id": null,
+      "shape_type": "rectangle",
+      "flags": {}
+    },
+    {
+      "label": "red",
+      "text": "",
+      "points": [
+        [
+          2984.0579710144925,
+          1804.8985507246377
+        ],
+        [
+          3039.4202898550725,
+          1859.1014492753623
+        ]
+      ],
+      "group_id": null,
+      "shape_type": "rectangle",
+      "flags": {}
+    },
+    {
+      "label": "red",
+      "text": "",
+      "points": [
+        [
+          2391.4835164835163,
+          1307.142857142857
+        ],
+        [
+          2446.978021978022,
+          1360.4395604395604
+        ]
+      ],
+      "group_id": null,
+      "shape_type": "rectangle",
+      "flags": {}
+    },
+    {
+      "label": "orange",
+      "text": "",
+      "points": [
+        [
+          2179.395604395604,
+          1465.3846153846152
+        ],
+        [
+          2232.4175824175823,
+          1517.5824175824175
+        ]
+      ],
+      "group_id": null,
+      "shape_type": "rectangle",
+      "flags": {}
+    },
+    {
+      "label": "red",
+      "text": "",
+      "points": [
+        [
+          1477.2745098039218,
+          1284.313725490196
+        ],
+        [
+          2041.9803921568628,
+          1847.0588235294117
+        ]
+      ],
+      "group_id": null,
+      "shape_type": "rectangle",
+      "flags": {}
+    },
+    {
+      "label": "yellow",
+      "text": "",
+      "points": [
+        [
+          752.9230769230771,
+          1244.6153846153845
+        ],
+        [
+          1063.6923076923078,
+          1551.5384615384614
+        ]
+      ],
+      "group_id": null,
+      "shape_type": "rectangle",
+      "flags": {}
+    }
+  ],
+  "imagePath": "IMG_4467.png",
+  "imageData": null,
+  "imageHeight": 3024,
+  "imageWidth": 4032
+}

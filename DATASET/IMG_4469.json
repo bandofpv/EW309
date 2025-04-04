@@ -1,0 +1,112 @@
+{
+  "version": "0.4.16",
+  "flags": {},
+  "shapes": [
+    {
+      "label": "red",
+      "text": "",
+      "points": [
+        [
+          2635.6721311475408,
+          1642.950819672131
+        ],
+        [
+          2689.4426229508194,
+          1696.0655737704917
+        ]
+      ],
+      "group_id": null,
+      "shape_type": "rectangle",
+      "flags": {}
+    },
+    {
+      "label": "yellow",
+      "text": "",
+      "points": [
+        [
+          2450.0983606557375,
+          1550.1639344262294
+        ],
+        [
+          2579.2786885245896,
+          1675.7377049180327
+        ]
+      ],
+      "group_id": null,
+      "shape_type": "rectangle",
+      "flags": {}
+    },
+    {
+      "label": "orange",
+      "text": "",
+      "points": [
+        [
+          2198.7272727272725,
+          1054.2424242424242
+        ],
+        [
+          2326.0,
+          1180.3030303030303
+        ]
+      ],
+      "group_id": null,
+      "shape_type": "rectangle",
+      "flags": {}
+    },
+    {
+      "label": "red",
+      "text": "",
+      "points": [
+        [
+          1615.4639175257732,
+          1198.9690721649486
+        ],
+        [
+          2160.8247422680415,
+          1743.298969072165
+        ]
+      ],
+      "group_id": null,
+      "shape_type": "rectangle",
+      "flags": {}
+    },
+    {
+      "label": "orange",
+      "text": "",
+      "points": [
+        [
+          1604.3478260869565,
+          1776.7826086956522
+        ],
+        [
+          1655.0724637681158,
+          1826.6376811594203
+        ]
+      ],
+      "group_id": null,
+      "shape_type": "rectangle",
+      "flags": {}
+    },
+    {
+      "label": "yellow",
+      "text": "",
+      "points": [
+        [
+          1266.183574879227,
+          1521.1787439613527
+        ],
+        [
+          1570.0483091787441,
+          1818.2801932367151
+        ]
+      ],
+      "group_id": null,
+      "shape_type": "rectangle",
+      "flags": {}
+    }
+  ],
+  "imagePath": "IMG_4469.png",
+  "imageData": null,
+  "imageHeight": 3024,
+  "imageWidth": 4032
+}

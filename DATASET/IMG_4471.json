@@ -1,0 +1,129 @@
+{
+  "version": "0.4.16",
+  "flags": {},
+  "shapes": [
+    {
+      "label": "yellow",
+      "text": "",
+      "points": [
+        [
+          2721.0595238095234,
+          1928.220238095238
+        ],
+        [
+          2769.273809523809,
+          1976.4345238095239
+        ]
+      ],
+      "group_id": null,
+      "shape_type": "rectangle",
+      "flags": {}
+    },
+    {
+      "label": "orange",
+      "text": "",
+      "points": [
+        [
+          1254.9800796812747,
+          1288.844621513944
+        ],
+        [
+          1376.8924302788844,
+          1408.3665338645417
+        ]
+      ],
+      "group_id": null,
+      "shape_type": "rectangle",
+      "flags": {}
+    },
+    {
+      "label": "orange",
+      "text": "",
+      "points": [
+        [
+          1536.7126948775053,
+          1217.1224944320713
+        ],
+        [
+          1586.8240534521158,
+          1265.4521158129176
+        ]
+      ],
+      "group_id": null,
+      "shape_type": "rectangle",
+      "flags": {}
+    },
+    {
+      "label": "yellow",
+      "text": "",
+      "points": [
+        [
+          1889.2753623188405,
+          1227.5072463768117
+        ],
+        [
+          2009.5652173913043,
+          1346.927536231884
+        ]
+      ],
+      "group_id": null,
+      "shape_type": "rectangle",
+      "flags": {}
+    },
+    {
+      "label": "yellow",
+      "text": "",
+      "points": [
+        [
+          1715.3846153846152,
+          1502.6593406593408
+        ],
+        [
+          1997.2527472527472,
+          1785.076923076923
+        ]
+      ],
+      "group_id": null,
+      "shape_type": "rectangle",
+      "flags": {}
+    },
+    {
+      "label": "red",
+      "text": "",
+      "points": [
+        [
+          2541.5697674418607,
+          1702.5523255813953
+        ],
+        [
+          2590.406976744186,
+          1752.843023255814
+        ]
+      ],
+      "group_id": null,
+      "shape_type": "rectangle",
+      "flags": {}
+    },
+    {
+      "label": "red",
+      "text": "",
+      "points": [
+        [
+          2714.8514851485147,
+          1230.6930693069307
+        ],
+        [
+          3246.5346534653463,
+          1755.4455445544554
+        ]
+      ],
+      "group_id": null,
+      "shape_type": "rectangle",
+      "flags": {}
+    }
+  ],
+  "imagePath": "IMG_4471.png",
+  "imageData": null,
+  "imageHeight": 3024,
+  "imageWidth": 4032
+}
