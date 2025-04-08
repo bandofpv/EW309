@@ -1,7 +1,8 @@
 import serial
 
 ser = serial.Serial('COM21', 9600)  # open serial port
-ser.write(b"Hello I am PC!\n")     # write a string
+# ser.write(b"Hello I am PC!\n")     # write a string
+ser.write(b"(1,2,3,4,5,6)\n")
 
 msg = ser.readline().strip().decode("utf-8").split(',')
 print(msg)

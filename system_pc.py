@@ -1,4 +1,4 @@
-# aim_and_fire_pc
+# system_pc.py
 
 import time
 import serial
@@ -9,6 +9,9 @@ import pandas as pd
 from camera import Camera
 import matplotlib.pyplot as plt
 
+distance_to_target = 0  # m
+x_bias = 0
+y_bias = 0
 fps = 30
 record = True
 sampling_rate = 60  # Hz
@@ -42,14 +45,14 @@ def read_serial(stop_event):
         slope_data.append(float(data[8]))
         time_stamp = time.perf_counter() - start_time
         time_data.append(time_stamp)
-        print(f"RECEIVED({time_stamp}): Yaw: {float(data[0])} Pitch: {data[1]} Yaw Velocity: {data[2]} Pitch Velocity: {data[3]} Yaw Duty Cycle: {data[4]} Pitch Duty Cycle: {data[5]} Current: {data[6]} Shot Count: {data[7]} Slope: {data[8]}")
+        print(f"PICO ({time_stamp}): Yaw: {float(data[0])} Pitch: {data[1]} Yaw Velocity: {data[2]} Pitch Velocity: {data[3]} Yaw Duty Cycle: {data[4]} Pitch Duty Cycle: {data[5]} Current: {data[6]} Shot Count: {data[7]} Slope: {data[8]}")
 
 # Start read_serial on seperate thread
 stop_event = threading.Event()
 serial_thread = threading.Thread(target=read_serial, args=(stop_event,))
 
 # Start video stream on seperate thread
-oakCamera = Camera(fps, record)  # start camera instance
+oakCamera = Camera(distance_to_target, x_bias, y_bias, fps, record)  # start camera instance
 camera_thread = threading.Thread(target=oakCamera.stream_video)
 camera_thread.start()
 
