@@ -17,8 +17,6 @@ https://albumentations.ai/docs/api_reference/augmentations/
 
 Augmented images/annotation txt files are placed into the original directory.
 
-Usage: EW309_YoloAugment.py
-
 Requires: pip install albumentations
           pip install opencv-python
           pip install tqdm
