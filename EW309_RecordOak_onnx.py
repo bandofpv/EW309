@@ -7,11 +7,11 @@ import depthai as dai
 import datetime 
 import os
 
-import EW309_Yolo_cpu as EW309 # Adds class to perform NN detection/display
+import yolo # Adds class to perform NN detection/display
 
 # onnx model and yaml file file
-path_to_model = r'G:\My Drive\EW309_Spring_2025_Frontera\Computer Vision\runs\detect\train16\weights\best.onnx' # path to .onnx weights
-path_to_yaml = r'G:\My Drive\EW309_Spring_2025_Frontera\Computer Vision\Example Files\yolo\data.yaml'#r'G:\My Drive\EW309_CV\data.yaml' # path to data.yaml file used to train the model 
+path_to_model = r"C:\Users\m260477\Desktop\EW309\yolo.onnx" # path to .onnx weights
+path_to_yaml = r"C:\Users\m260477\Desktop\EW309\data.yaml" # path to data.yaml file used to train the model 
 conf_thres = 0.15 # classification confidence threshold, 0.0-1.0
 iou_thres = 0.15 # iou threshold, 0.0-1.0
 
@@ -30,7 +30,7 @@ camRgb = pipeline.createColorCamera()
 xoutRgb = pipeline.createXLinkOut()
 
 # Camera Properties
-camRgb.setResolution(dai.ColorCameraProperties.SensorResolution.THE_1080_P)#THE_1080_P)
+camRgb.setResolution(dai.ColorCameraProperties.SensorResolution.THE_1080_P) # THE_1080_P
 camRgb.setPreviewSize(camRgb.getVideoSize()) # must match resolution, max 4K
 camRgb.setInterleaved(False)
 camRgb.setColorOrder(dai.ColorCameraProperties.ColorOrder.RGB)
@@ -81,10 +81,10 @@ with dai.Device(pipeline) as device:
 
     # Create output window
     cv2.namedWindow(windowName, cv2.WINDOW_NORMAL)
-    cv2.resizeWindow(windowName, windowSize[0], windowSize[1])
+    cv2.resizeWindow(windowName, int(vidSize[0]/2), int(vidSize[1]/2))  # resize to half output size
 
-    # Instantiate YOLOv8 object
-    detect=EW309.YOLOv8_11(path_to_model,path_to_yaml,[],conf_thres,iou_thres)
+    # Instantiate YOLOv11 object
+    detect=yolo.YOLOv8_11(path_to_model,path_to_yaml,[],conf_thres,iou_thres)
 
     print('Entering loop')
     
@@ -101,6 +101,7 @@ with dai.Device(pipeline) as device:
             out_img = detect.CPUinference()
             
             if detect.nn:
+                print("\n")
                 for item in detect.nn:
                     print(f'{item}')
             
