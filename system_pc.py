@@ -81,7 +81,8 @@ while True:
         ser.write(b"SPACE\n")  # send initial signal
         oakCamera.snapshot_event.set() # take snapshot
         time.sleep(0.1)  # wait for initialization
-        ser.write(b"ENTER\n")
+        ser.write(b"(10,20,3,-10,0,2)\n")
+#         ser.write(b"ENTER\n")
         break
     elif keyboard.is_pressed('q'):
         print('Quitting the program')

@@ -61,12 +61,12 @@ while not data:
     time.sleep(0.1)
     
 # Initialize Target 1 Variables
-yaw1, pitch1, num_shots1 = 0
-move_yaw1, move_pitch1, shoot1 = False
+yaw1 = pitch1 = num_shots1 = 0
+move_yaw1 = move_pitch1 = shoot1 = False
 
 # Initialize Target 2 Variables
-yaw2, pitch2,num_shots2 = 0
-move_yaw2, move_pitch2, shoot2 = False
+yaw2 = pitch2 = num_shots2 = 0
+move_yaw2 = move_pitch2 = shoot2 = False
 
 while True:
     # Read imu data and send through serial port
@@ -78,7 +78,7 @@ while True:
     
     # Check if serial data was recieved and control motors
     if data:
-    print(f"PC: {data}")
+        print(f"PC: {data}")
         # If target angles and number of shots received, start moving
         if type(data) == list:
             yaw1, pitch1, num_shots1, yaw2, pitch2, num_shots2 = data
@@ -104,6 +104,7 @@ while True:
                 fire_system.motor2.value(0)
                 break
             elif data == "ENTER":
+                pass
 #                 move_yaw1 = True
 #                 move_pitch1 = True
             data = None  # reset data variable

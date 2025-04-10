@@ -3,7 +3,7 @@ import threading
 from camera import Camera
 
 # Start video stream on seperate thread
-oakCamera = Camera(0, 'orange', 0, 0, 30, True)  # start camera instance
+oakCamera = Camera(4.572, 'red', 0, 0, 30, True)  # start camera instance
 camera_thread = threading.Thread(target=oakCamera.stream_video)
 camera_thread.start()
 

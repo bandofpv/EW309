@@ -58,9 +58,7 @@ class Camera:
             exit()
 
         # Get Camera Intrinsics
-        self.M_row1 = 0
-        self.M_row2 = 0
-        self.M_row3 = 0
+        self.M_row1 = self.M_row2 = self.M_row3 = 0
         self.get_camera_info()
 
         # Create threading event for taking snapshots
@@ -75,7 +73,7 @@ class Camera:
         with dai.Device(self.pipeline) as device:
             # Get camera information 
             calibData = device.readCalibration()
-            self.M_row1, self.M_row2, self.M_row3 = calibData.getCameraIntrinsics(dai.CameraBoardSocket.CAM_A,640,480)
+            self.M_row1, self.M_row2, self.M_row3 = calibData.getCameraIntrinsics(dai.CameraBoardSocket.CAM_A,1920,1080)
             fov = calibData.getFov(dai.CameraBoardSocket.CAM_A)
             print('Camera Intrinsic Matrix:')
             print(f'{self.M_row1}')
@@ -104,7 +102,7 @@ class Camera:
 
             # Create output window
             cv2.namedWindow(self.windowName, cv2.WINDOW_NORMAL)
-            cv2.resizeWindow(self.windowName, int(self.video_size[0]/2), int(self.video_size[1]/2))  # resize to half output size
+#             cv2.resizeWindow(self.windowName, int(self.video_size[0]/2), int(self.video_size[1]/2))  # resize to half output size
 
             # Instantiate YOLOv8 object
             detect = yolo.YOLOv8_11(self.path_to_model, self.path_to_yaml, [], self.conf_thres, self.iou_thres)
@@ -123,14 +121,19 @@ class Camera:
                     out_img = detect.CPUinference()
                     
                     if detect.nn:
+                        print(int(self.video_size[1]/2))
                         print('\n')
                         print(*detect.nn, sep='\n')
-                        self.targets = self.find_targets(detect.nn)
-                        print(self.targets)
+#                         self.targets = self.find_targets(detect.nn)
+#                         print(self.targets)
+                        for i in detect.nn:
+                            print(self.y_pixels_to_si_units(i[1][3]))
 
                     # Draw crosshairs
                     cv2.line(out_img, (0, int(self.video_size[1]/2)), (self.video_size[0],int(self.video_size[1]/2)), (0, 255, 0), 3)
                     cv2.line(out_img, (int(self.video_size[0]/2), 0), (int(self.video_size[0]/2),self.video_size[1]), (0, 255, 0), 3)
+                    cv2.line(out_img, (0, int(self.M_row2[2])), (self.video_size[0],int(self.M_row2[2])), (255, 0, 0), 3)
+                    cv2.line(out_img, (int(self.M_row1[2]), 0), (int(self.M_row1[2]),self.video_size[1]), (255, 0, 0), 3)
 
                     # Display 
                     cv2.imshow(self.windowName, out_img)
@@ -163,28 +166,28 @@ class Camera:
     def grab_snapshot(self, frame):
         image_window_name = f"Snapshot {datetime.datetime.now().strftime('%m_%d_%H%M%S')}"
         cv2.namedWindow(image_window_name, cv2.WINDOW_NORMAL)
-        cv2.resizeWindow(image_window_name, int(self.video_size[0]/2), int(self.video_size[1]/2)) 
+#         cv2.resizeWindow(image_window_name, int(self.video_size[0]/2), int(self.video_size[1]/2)) 
         cv2.imshow(image_window_name, frame)
         
     # Convert x_pixels to meters in image frame
     def x_pixels_to_si_units(self, x_pixels):
-        c_x = int(self.video_size[0]/2)
+        c_x = self.M_row1[2]
         f_x = self.M_row1[0]
         return (self.distance_to_target*(x_pixels-c_x))/f_x
     
     # Convert y_pixels to meters in image frame
     def y_pixels_to_si_units(self, y_pixels):
-        c_y = int(self.video_size[1]/2)
+        c_y = self.M_row2[2]
         f_y = self.M_row2[1]
         return (self.distance_to_target*(y_pixels-c_y))/-f_y
     
     # Find 5 inch targets
-    def find_targets(self, detections, size=14, tolerance=1):
+    def find_targets(self, detections, size=45, tolerance=5):
         targets = []
 
         for label, bbox, confidence in detections:
             x, y, w, h = bbox
-            if label == self.color and abs(self.y_pixels_to_si_units(h) - size) <= tolerance:
+            if label == self.target_color and abs(h - size) <= tolerance:
                 center_x = x + w / 2
                 center_y = y + h / 2
                 targets.append((center_x, center_y))
