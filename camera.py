@@ -17,9 +17,10 @@ class Camera:
         self.fps = fps
         self.record = record
         
-        # onnx model and yaml file paths
+        # onnx model, yaml, and video file paths
         self.path_to_model = r"C:\Users\m260477\Desktop\EW309\yolo.onnx" # path to .onnx weights
         self.path_to_yaml = r"C:\Users\m260477\Desktop\EW309\data.yaml" # path to data.yaml file used to train the model
+        self.video_path = r"C:\Users\m260477\Videos"
 
         # Thresholds
         self.conf_thres = conf_thres # classification confidence threshold, 0.0-1.0
@@ -44,7 +45,7 @@ class Camera:
         self.camRgb.preview.link(xoutRgb.input)
 
         # Get Video Output Size
-        self.video_size = self.camRgb.getVideoSize() # Video (height, width)
+        self.video_size = self.camRgb.getVideoSize() # Video (width, height)
 
         # Initialze Video Recorder
         if self.record:
@@ -73,7 +74,7 @@ class Camera:
         with dai.Device(self.pipeline) as device:
             # Get camera information 
             calibData = device.readCalibration()
-            self.M_row1, self.M_row2, self.M_row3 = calibData.getCameraIntrinsics(dai.CameraBoardSocket.CAM_A,1920,1080)
+            self.M_row1, self.M_row2, self.M_row3 = calibData.getCameraIntrinsics(dai.CameraBoardSocket.CAM_A,self.video_size[0],self.video_size[1])
             fov = calibData.getFov(dai.CameraBoardSocket.CAM_A)
             print('Camera Intrinsic Matrix:')
             print(f'{self.M_row1}')
@@ -83,12 +84,10 @@ class Camera:
     
     # Initilize video recorder
     def init_recorder(self):
-        # Set up folder path
-        VID_FOLDER = r"C:\Users\m260477\Videos"
-        if not os.path.exists(VID_FOLDER):
-            os.makedirs(VID_FOLDER)
+        if not os.path.exists(self.video_path):
+            os.makedirs(self.video_path)
         now = datetime.datetime.now().strftime('%m_%d_%H%M%S')
-        self.filename = os.path.join(VID_FOLDER,'OAKvid_'+now+'.avi')
+        self.filename = os.path.join(self.video_path,'OAKvid_'+now+'.avi')
 
         # Create videowriter object, outputs .avi file
         self.video_out = cv2.VideoWriter(self.filename, cv2.VideoWriter.fourcc(*'MJPG'), self.fps, self.video_size)
@@ -102,7 +101,7 @@ class Camera:
 
             # Create output window
             cv2.namedWindow(self.windowName, cv2.WINDOW_NORMAL)
-#             cv2.resizeWindow(self.windowName, int(self.video_size[0]/2), int(self.video_size[1]/2))  # resize to half output size
+#             cv2.resizeWindow(self.windowName, int(self.video_size[0]), int(self.video_size[1]))  # resize to output size
 
             # Instantiate YOLOv8 object
             detect = yolo.YOLOv8_11(self.path_to_model, self.path_to_yaml, [], self.conf_thres, self.iou_thres)
@@ -121,19 +120,20 @@ class Camera:
                     out_img = detect.CPUinference()
                     
                     if detect.nn:
-                        print(int(self.video_size[1]/2))
                         print('\n')
                         print(*detect.nn, sep='\n')
-#                         self.targets = self.find_targets(detect.nn)
-#                         print(self.targets)
-                        for i in detect.nn:
-                            print(self.y_pixels_to_si_units(i[1][3]))
+                        self.find_targets(detect.nn)
+                        
+                    if self.targets:
+                        print(self.targets)
+                        for target in self.targets:
+                            cv2.circle(out_img, (int(target[0]),int(target[1])), 4, (0, 0, 255), -1)
 
                     # Draw crosshairs
-                    cv2.line(out_img, (0, int(self.video_size[1]/2)), (self.video_size[0],int(self.video_size[1]/2)), (0, 255, 0), 3)
-                    cv2.line(out_img, (int(self.video_size[0]/2), 0), (int(self.video_size[0]/2),self.video_size[1]), (0, 255, 0), 3)
-                    cv2.line(out_img, (0, int(self.M_row2[2])), (self.video_size[0],int(self.M_row2[2])), (255, 0, 0), 3)
-                    cv2.line(out_img, (int(self.M_row1[2]), 0), (int(self.M_row1[2]),self.video_size[1]), (255, 0, 0), 3)
+                    cv2.line(out_img, (0, int(self.video_size[1]/2)), (self.video_size[0],int(self.video_size[1]/2)), (0, 255, 0), 2)
+                    cv2.line(out_img, (int(self.video_size[0]/2), 0), (int(self.video_size[0]/2),self.video_size[1]), (0, 255, 0), 2)
+                    cv2.line(out_img, (0, int(self.M_row2[2])), (self.video_size[0],int(self.M_row2[2])), (255, 0, 0), 2)
+                    cv2.line(out_img, (int(self.M_row1[2]), 0), (int(self.M_row1[2]),self.video_size[1]), (255, 0, 0), 2)
 
                     # Display 
                     cv2.imshow(self.windowName, out_img)
@@ -149,6 +149,8 @@ class Camera:
                 # Snapshot window  
                 if self.snapshot_event.is_set():
                     self.grab_snapshot(out_img)
+                    if detect.nn:
+                        self.find_targets(detect.nn)
                     self.snapshot_event.clear()
                 
                 # Close window if x button is clicked
@@ -166,8 +168,27 @@ class Camera:
     def grab_snapshot(self, frame):
         image_window_name = f"Snapshot {datetime.datetime.now().strftime('%m_%d_%H%M%S')}"
         cv2.namedWindow(image_window_name, cv2.WINDOW_NORMAL)
-#         cv2.resizeWindow(image_window_name, int(self.video_size[0]/2), int(self.video_size[1]/2)) 
+#         cv2.resizeWindow(image_window_name, int(self.video_size[0]), int(self.video_size[1])) 
         cv2.imshow(image_window_name, frame)
+    
+    # Calculate height of targets
+    def calc_height(self, y_pixels):
+        f_y = self.M_row2[1]
+        return (self.distance_to_target*y_pixels)/f_y
+    
+    # Find 5 inch (12.7 cm) targets
+    def find_targets(self, detections, height=12.7, tolerance=3):
+        self.targets = []
+
+        for label, bbox, confidence in detections:
+            x, y, w, h = bbox
+            if label == self.target_color and abs(self.calc_height(h) - height) <= tolerance:
+                center_x = x + w / 2
+                center_y = y + h / 2
+                self.targets.append((center_x, center_y))
+
+        if len(self.targets) > 2:
+            print("Detected more than two targets!!!")
         
     # Convert x_pixels to meters in image frame
     def x_pixels_to_si_units(self, x_pixels):
@@ -181,26 +202,16 @@ class Camera:
         f_y = self.M_row2[1]
         return (self.distance_to_target*(y_pixels-c_y))/-f_y
     
-    # Find 5 inch targets
-    def find_targets(self, detections, size=45, tolerance=5):
-        targets = []
-
-        for label, bbox, confidence in detections:
-            x, y, w, h = bbox
-            if label == self.target_color and abs(h - size) <= tolerance:
-                center_x = x + w / 2
-                center_y = y + h / 2
-                targets.append((center_x, center_y))
-
-        if len(targets) > 2:
-            print("Detected more than two targets!!!")
-            
-        return targets
-
     # Calculate yaw and pitch angles using x, y coordinates (in meters)
-    def calc_angles(self, target_coordinates, yaw_imu, pitch_imu):
-        x_pixels = int(self.video_size[0]/2) - target_coordinates[0]
-        y_pixels = int(self.video_size[1]/2) - target_coordinates[1]
-        yaw = yaw_imu + math.atan2((x_pixels-self.x_bias)/self.distance_to_target)
-        pitch = pitch_imu + math.atan2((y_pixels-self.y_bias)/self.distance_to_target)
-        return yaw, pitch
+    def calc_angles(self, yaw_imu, pitch_imu):
+        x_pixels1 = self.x_pixels_to_si_units(self.targets[0][0])
+        y_pixels1 = self.y_pixels_to_si_units(self.targets[0][1])
+        yaw1 = yaw_imu + math.atan2((x_pixel1s-self.x_bias)/self.distance_to_target)
+        pitch1 = pitch_imu + math.atan2((y_pixels1-self.y_bias)/self.distance_to_target)
+        
+        x_pixels2 = self.x_pixels_to_si_units(self.targets[1][0])
+        y_pixels2 = self.y_pixels_to_si_units(self.targets[1][1])
+        yaw2 = yaw_imu + math.atan2((x_pixels2-self.x_bias)/self.distance_to_target)
+        pitch2 = pitch_imu + math.atan2((y_pixels2-self.y_bias)/self.distance_to_target)
+        
+        return yaw1, pitch1, yaw2, pitch2

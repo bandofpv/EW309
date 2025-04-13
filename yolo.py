@@ -1,6 +1,4 @@
-# EW309 YOLO implementation dreived from Ultralytics YOLO 🚀, AGPL-3.0 license
-# Performs inference on CPU
-# P. Frontera, March 2024
+# yolo.py
 
 import cv2
 import numpy as np

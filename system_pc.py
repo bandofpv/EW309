@@ -10,6 +10,7 @@ from camera import Camera
 import matplotlib.pyplot as plt
 
 distance_to_target = 0  # m
+target_color = 'red'
 x_bias = 0
 y_bias = 0
 fps = 30
@@ -50,9 +51,10 @@ def read_serial(stop_event):
 # Start read_serial on seperate thread
 stop_event = threading.Event()
 serial_thread = threading.Thread(target=read_serial, args=(stop_event,))
+serial_thread.start()  # start reading serial port
 
 # Start video stream on seperate thread
-oakCamera = Camera(distance_to_target, x_bias, y_bias, fps, record)  # start camera instance
+oakCamera = Camera(distance_to_target, target_color, x_bias, y_bias, fps, record)  # start camera instance
 camera_thread = threading.Thread(target=oakCamera.stream_video)
 camera_thread.start()
 
@@ -77,11 +79,12 @@ while True:
         ser.write(b"SPACE\n")  # send to serial
     elif keyboard.is_pressed('enter'):
         print('Enter button pressed')
-        serial_thread.start()  # start reading serial port
         ser.write(b"SPACE\n")  # send initial signal
         oakCamera.snapshot_event.set() # take snapshot
+        yaw1, pitch1, yaw2, pitch2 = oakCamera.calc_angles(yaw_data[-1], pitch_data[-1])
+        print(yaw1, pitch1, yaw2, pitch2)
         time.sleep(0.1)  # wait for initialization
-        ser.write(b"(10,20,3,-10,0,2)\n")
+        ser.write(b"(10,20,3,-10,0,2)\n")  # TESTING
 #         ser.write(b"ENTER\n")
         break
     elif keyboard.is_pressed('q'):
