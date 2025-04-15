@@ -16,7 +16,6 @@ camera_thread = threading.Thread(target=oakCamera.stream_video)
 camera_thread.start()
 
 while True:
-    print("\n")
     yaw1, pitch1, yaw2, pitch2 = oakCamera.calc_angles(0, 0)
     print(yaw1, pitch1, yaw2, pitch2)
     num_shots1 = num_shots2 = oakCamera.calc_shots()

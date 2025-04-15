@@ -9,8 +9,9 @@ import pandas as pd
 from camera import Camera
 import matplotlib.pyplot as plt
 
-distance_to_target = 0  # m
-target_color = 'red'
+# 10 ft: 304.8 15 ft: 457.2 20 ft: 609.6
+distance_to_target = 457.2  # cm
+target_color = 'orange'
 target_ranges = [304.8, 457.2, 609.6]  # cm
 x_bias = [-9.75, -7.59, -15.17]  # cm
 y_bias = [-26.08, -46.03, -74.35]  # cm
@@ -19,17 +20,13 @@ fps = 30
 record = True
 sampling_rate = 60  # Hz
 
-ser = serial.Serial('COM21', 9600)  # open serial DATA port
+ser = serial.Serial('COM36', 9600)  # open serial DATA port
 
 yaw_data = []
 pitch_data = []
 yaw_velocity_data = []
 pitch_velocity_data = []
-yaw_duty_cycle_data = []
-pitch_duty_cycle_data = []
-current_data = []
 shot_count_data = []
-slope_data = []
 time_data = []
 
 # Decode serial data
@@ -41,14 +38,10 @@ def read_serial(stop_event):
         pitch_data.append(float(data[1]))
         yaw_velocity_data.append(-float(data[2]))
         pitch_velocity_data.append(-float(data[3]))
-        yaw_duty_cycle_data.append(float(data[4]))
-        pitch_duty_cycle_data.append(float(data[5]))
-        current_data.append(float(data[6]))
-        shot_count_data.append(int(data[7]))
-        slope_data.append(float(data[8]))
+        shot_count_data.append(data[4])
         time_stamp = time.perf_counter() - start_time
         time_data.append(time_stamp)
-        print(f"PICO ({time_stamp}): Yaw: {float(data[0])} Pitch: {data[1]} Yaw Velocity: {data[2]} Pitch Velocity: {data[3]} Yaw Duty Cycle: {data[4]} Pitch Duty Cycle: {data[5]} Current: {data[6]} Shot Count: {data[7]} Slope: {data[8]}")
+        print(f"PICO ({time_stamp}): Yaw: {float(data[0])} Pitch: {data[1]} Yaw Velocity: {data[2]} Pitch Velocity: {data[3]} Shot Count: {data[4]}")
 
 # Start read_serial on seperate thread
 stop_event = threading.Event()
@@ -81,27 +74,25 @@ while True:
         ser.write(b"SPACE\n")  # send to serial
     elif keyboard.is_pressed('enter'):
         print('Enter button pressed')
-        ser.write(b"SPACE\n")  # send initial signal
-        oakCamera.snapshot_event.set() # take snapshot
-        yaw1, pitch1, yaw2, pitch2 = oakCamera.calc_angles(yaw_data[-1], pitch_data[-1])
-        print(yaw1, pitch1, yaw2, pitch2)
-        num_shots1 = num_shots2 = oakCamera.calc_shots()
-        print(num_shots1, num_shots2)
-        time.sleep(0.1)  # wait for initialization
-        ser.write(b"(10,20,3,-10,0,2)\n")  # TESTING
-        data_string = f"({yaw1}, {pitch1}, {num_shots1}, {yaw2}, {pitch2}, {num_shots2})"
-#         ser.write(data_string.encode('utf-8'))
-        ser.write(b"ENTER\n")
+        ser.write(b"ENTER\n")  # send to serial
         break
     elif keyboard.is_pressed('q'):
         print('Quitting the program')
         ser.write(b"QUIT\n")  # send to serial
         break
-
-    time.sleep(1/sampling_rate)  # control loop rate
+    elif yaw_data:
+        oakCamera.snapshot_event.set() # take snapshot
+        yaw1, pitch1, yaw2, pitch2 = oakCamera.calc_angles(yaw_data[-1], pitch_data[-1])
+        num_shots1 = num_shots2 = oakCamera.calc_shots()
+        data_string = f"({yaw1:.3f},{pitch1:.3f},{num_shots1},{yaw2:.3f},{pitch2:.3f},{num_shots2})\n"
+        ser.write(data_string.encode('utf-8'))
+        print("+++++++SENT+++++++")
+        print(yaw1, pitch1, yaw2, pitch2, num_shots1, num_shots2)
+        print("==================")
+        break
 
 while True:
-    if shot_count_data and shot_count_data[-1] == 5:
+    if shot_count_data and shot_count_data[-1] >= 10:
         print("Done Shooting")
         break
     time.sleep(1/sampling_rate)  # control loop rate
@@ -109,13 +100,6 @@ while True:
 stop_event.set()  # stop serial_read thread
 serial_thread.join()
 camera_thread.join()
-
-plt.figure(figsize=(10, 5))
-plt.plot(time_data, current_data, marker='.')
-plt.title("Current vs. Time")
-plt.xlabel("Time (seconds)")
-plt.ylabel("Current (mA)")
-plt.grid(True)
 
 # Subplot for Position vs. Time
 plt.figure(figsize=(10, 5))
@@ -142,5 +126,5 @@ plt.legend( )
 plt.tight_layout()
 plt.show()
 
-df = pd.DataFrame({'time': time_data, 'yaw': yaw_data, 'pitch': pitch_data, 'yaw_velocity': yaw_velocity_data, 'pitch_velocity': pitch_velocity_data, 'yaw_duty_cycle': yaw_duty_cycle_data, 'pitch_duty_cycle': pitch_duty_cycle_data, 'fire_system_current': current_data, 'shot_count': shot_count_data, 'slope': slope_data})
+df = pd.DataFrame({'time': time_data, 'yaw': yaw_data, 'pitch': pitch_data, 'yaw_velocity': yaw_velocity_data, 'pitch_velocity': pitch_velocity_data})
 df.to_csv("data.csv")

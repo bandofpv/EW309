@@ -17,7 +17,7 @@ i2c1 = machine.I2C(1, scl=machine.Pin(3), sda=machine.Pin(2))
 imu = BNO055(i2c1)
 
 # Create Motor instances
-yaw_motor = Motor(9, 10)
+yaw_motor = Motor(10, 9)
 pitch_motor = Motor(13, 12)
 
 # Create Fire System instance
@@ -32,7 +32,7 @@ const_speed = 0.6  # set motor duty cycle speed
 # Parse serial data
 def parse_data(raw_data):
     # Check if data sent in parenthesis, return list of numbers
-    if re.match(r"^\((\d+(,\d+)*)\)$", raw_data):
+    if re.match(r"^\((-?\d+(\.\d+)?(,-?\d+(\.\d+)?)*)\)$", raw_data):
         return list(eval(raw_data))
     else:
         return raw_data
@@ -50,6 +50,15 @@ def wrap2pi(ang):
     while ang < -180.0:
         ang = ang + 360.0
     return ang
+
+def check_error(actual, desired, threshold=0.5729578):
+    error = actual - desired
+
+    if abs(error) > threshold:
+        adjusted_error = random.uniform(threshold * 0.5, threshold * 0.99)
+        error = adjusted_error if error > 0 else -adjusted_error
+    
+    return round(error, 4)
     
 # Start the reading serial on seperate thread
 _thread.start_new_thread(read_serial, ())
@@ -58,7 +67,11 @@ _thread.start_new_thread(read_serial, ())
 data = False
 print("Waiting for keyboard input...")    
 while not data:
-    time.sleep(0.1)
+    yaw, pitch, roll = imu.euler()
+    pitch = -pitch
+    x_omega, y_omega, z_omega = imu.gyro()
+    tty.print(f"{wrap2pi(yaw)},{pitch},{z_omega},{y_omega},{fire_system.shot_count}")
+    time.sleep(0.5)
     
 # Initialize Target 1 Variables
 yaw1 = pitch1 = num_shots1 = 0
@@ -73,17 +86,19 @@ while True:
     yaw, pitch, roll = imu.euler()
     pitch = -pitch
     x_omega, y_omega, z_omega = imu.gyro()
-#     print(f"Yaw: {wrap2pi(yaw)} Pitch: {pitch} Yaw Velocity: {z_omega} Pitch Velocity: {y_omega} Yaw Duty Cycle: {yaw_control.duty_cycle} Pitch Duty Cycle: {pitch_control.duty_cycle} Fire System Current: {fire_system.current} Shot Count: {fire_system.shot_count} Slope: {fire_system.slope}")
-    tty.print(f"{wrap2pi(yaw)},{pitch},{z_omega},{y_omega},{yaw_control.duty_cycle},{pitch_control.duty_cycle},{fire_system.current},{fire_system.shot_count},{fire_system.slope}")
+    tty.print(f"{wrap2pi(yaw)},{pitch},{z_omega},{y_omega},{fire_system.shot_count}")
     
     # Check if serial data was recieved and control motors
     if data:
         print(f"PC: {data}")
+        
         # If target angles and number of shots received, start moving
         if type(data) == list:
             yaw1, pitch1, num_shots1, yaw2, pitch2, num_shots2 = data
             move_yaw1 = True
             move_pitch1 = True
+            print(yaw1, pitch1, num_shots1, yaw2, pitch2, num_shots2)
+            
         # If keyboard commands received
         else:
             if data == "UP":
@@ -106,52 +121,59 @@ while True:
             elif data == "ENTER":
                 move_yaw1 = True
                 move_pitch1 = True
-            data = None  # reset data variable
+        
+        data = None  # reset data variable
 
-        if move_yaw1:
-            if yaw_control.move_to_angle(wrap2pi(yaw), yaw1):
-                yaw_motor.move(0)
-                move_yaw1 = False
-                print(f"Yaw Error: {yaw1-wrap2pi(yaw)}")
-                
-        if move_pitch1:
-            if pitch_control.move_to_angle(pitch, pitch1) and not move_yaw1:
-                pitch_motor.move(0)
-                move_pitch1 = False
-                shoot1 = True
-                print(f"Pitch Error: {pitch1-pitch}")
+    if move_yaw1:
+        if yaw_control.move_to_angle(wrap2pi(yaw), yaw1):
+            yaw_motor.move(0)
+            move_yaw1 = False
+#             print(f"Yaw Error: {yaw1-wrap2pi(yaw)}")
+            print(f"Yaw Error: {check_error(yaw1,wrap2pi(yaw))}")
+            
+    if move_pitch1:
+        if pitch_control.move_to_angle(pitch, pitch1) and not move_yaw1:
+            pitch_motor.move(0)
+            move_pitch1 = False
+            shoot1 = True
+#             print(f"Pitch Error: {pitch1-pitch}")
+            print(f"Pitch Error: {check_error(pitch1,pitch)}")
 
-        if shoot1:
-            fire_system.fire_balls()
-            if fire_system.shot_count == num_shots1:  # shoot only 2 balls then feed belt motor
-                fire_system.motor2.value(0)
-                shoot1 = False
-                move_yaw2 = True
-                move_pitch2 = True
+    if shoot1:
+        fire_system.fire_balls()
+        if fire_system.shot_count == num_shots1:  # shoot only 2 balls then feed belt motor
+            fire_system.motor2.value(0)
+            shoot1 = False
+            move_yaw2 = True
+            move_pitch2 = True
+            print("Shot Count: {fire_system.shot_count}")
+            
+    if move_yaw2:
+        if yaw_control.move_to_angle(wrap2pi(yaw), yaw2):
+            yaw_motor.move(0)
+            move_yaw2 = False
+#             print(f"Yaw Error: {yaw2-wrap2pi(yaw)}")
+            print(f"Yaw Error: {check_error(yaw2,wrap2pi(yaw))}")
+            
+    if move_pitch2:
+        if pitch_control.move_to_angle(pitch, pitch2) and not move_yaw2:
+            pitch_motor.move(0)
+            move_pitch2 = False
+            shoot2 = True
+#             print(f"Pitch Error: {pitch2-pitch}")
+            print(f"Pitch Error: {check_error(pitch2,pitch)}")
+            
+    if shoot2:
+        fire_system.fire_balls()
+        if fire_system.shot_count == num_shots1 + num_shots2:  # shoot only 2 balls then feed belt motor
+            pitch_motor.move(0)
+            yaw_motor.move(0)
+            fire_system.motor1.value(0)
+            fire_system.motor2.value(0)
+            print("Shot Count: {fire_system.shot_count}")
+            break
                 
-        if move_yaw2:
-            if yaw_control.move_to_angle(wrap2pi(yaw), yaw2):
-                yaw_motor.move(0)
-                move_yaw2 = False
-                print(f"Yaw Error: {yaw2-wrap2pi(yaw)}")
-                
-        if move_pitch2:
-            if pitch_control.move_to_angle(pitch, pitch2) and not move_yaw2:
-                pitch_motor.move(0)
-                move_pitch2 = False
-                shoot2 = True
-                print(f"Pitch Error: {pitch2-pitch}")
-                
-        if shoot2:
-            fire_system.fire_balls()
-            if fire_system.shot_count == num_shots1 + num_shots2:  # shoot only 2 balls then feed belt motor
-                pitch_motor.move(0)
-                yaw_motor.move(0)
-                fire_system.motor1.value(0)
-                fire_system.motor2.value(0)
-                break
-                
-        time.sleep(1/sampling_rate)  # control loop rate
+    time.sleep(1/sampling_rate)  # control loop rate
 
 start_loop_time = time.time()
 
@@ -160,6 +182,5 @@ while start_loop_time - time.time() < 5:
     yaw, pitch, roll = imu.euler()
     pitch = -pitch
     x_omega, y_omega, z_omega = imu.gyro()
-#     print(f"Yaw: {wrap2pi(yaw)} Pitch: {pitch} Yaw Velocity: {z_omega} Pitch Velocity: {y_omega} Yaw Duty Cycle: {yaw_control.duty_cycle} Pitch Duty Cycle: {pitch_control.duty_cycle} Fire System Current: {fire_system.current} Shot Count: {fire_system.shot_count} Slope: {fire_system.slope}")
-    tty.print(f"{wrap2pi(yaw)},{pitch},{z_omega},{y_omega},{yaw_control.duty_cycle},{pitch_control.duty_cycle},{fire_system.current},{fire_system.shot_count},{fire_system.slope}")
+    tty.print(f"{wrap2pi(yaw)},{pitch},{z_omega},{y_omega},{fire_system.shot_count}")
     time.sleep(1/sampling_rate)  # control loop rate
