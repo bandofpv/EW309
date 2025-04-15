@@ -11,8 +11,10 @@ import matplotlib.pyplot as plt
 
 distance_to_target = 0  # m
 target_color = 'red'
-x_bias = 0
-y_bias = 0
+target_ranges = [304.8, 457.2, 609.6]  # cm
+x_bias = [-9.75, -7.59, -15.17]  # cm
+y_bias = [-26.08, -46.03, -74.35]  # cm
+S_p = [3.41, 5.78, 7.26]  # cm
 fps = 30
 record = True
 sampling_rate = 60  # Hz
@@ -54,7 +56,7 @@ serial_thread = threading.Thread(target=read_serial, args=(stop_event,))
 serial_thread.start()  # start reading serial port
 
 # Start video stream on seperate thread
-oakCamera = Camera(distance_to_target, target_color, x_bias, y_bias, fps, record)  # start camera instance
+oakCamera = Camera(distance_to_target, target_color, target_ranges, x_bias, y_bias, S_p, fps, record)  # start camera instance
 camera_thread = threading.Thread(target=oakCamera.stream_video)
 camera_thread.start()
 
@@ -83,9 +85,13 @@ while True:
         oakCamera.snapshot_event.set() # take snapshot
         yaw1, pitch1, yaw2, pitch2 = oakCamera.calc_angles(yaw_data[-1], pitch_data[-1])
         print(yaw1, pitch1, yaw2, pitch2)
+        num_shots1 = num_shots2 = oakCamera.calc_shots()
+        print(num_shots1, num_shots2)
         time.sleep(0.1)  # wait for initialization
         ser.write(b"(10,20,3,-10,0,2)\n")  # TESTING
-#         ser.write(b"ENTER\n")
+        data_string = f"({yaw1}, {pitch1}, {num_shots1}, {yaw2}, {pitch2}, {num_shots2})"
+#         ser.write(data_string.encode('utf-8'))
+        ser.write(b"ENTER\n")
         break
     elif keyboard.is_pressed('q'):
         print('Quitting the program')

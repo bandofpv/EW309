@@ -104,9 +104,8 @@ while True:
                 fire_system.motor2.value(0)
                 break
             elif data == "ENTER":
-                pass
-#                 move_yaw1 = True
-#                 move_pitch1 = True
+                move_yaw1 = True
+                move_pitch1 = True
             data = None  # reset data variable
 
         if move_yaw1:

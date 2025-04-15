@@ -6,14 +6,17 @@ import yolo
 import math
 import datetime
 import threading
+import numpy as np
 import depthai as dai
 
 class Camera:
-    def __init__(self, distance_to_target, target_color, x_bias, y_bias, fps, record, conf_thres=0.15, iou_thres=0.15):
+    def __init__(self, distance_to_target, target_color, target_ranges, x_bias, y_bias, S_p, fps, record, conf_thres=0.15, iou_thres=0.15):
         self.distance_to_target = distance_to_target
         self.target_color = target_color
+        self.target_ranges = target_ranges
         self.x_bias = x_bias
         self.y_bias = y_bias
+        self.S_p = S_p
         self.fps = fps
         self.record = record
         
@@ -121,11 +124,11 @@ class Camera:
                     
                     if detect.nn:
                         print('\n')
-                        print(*detect.nn, sep='\n')
+#                         print(*detect.nn, sep='\n')
                         self.find_targets(detect.nn)
                         
                     if self.targets:
-                        print(self.targets)
+#                         print(self.targets)
                         for target in self.targets:
                             cv2.circle(out_img, (int(target[0]),int(target[1])), 4, (0, 0, 255), -1)
 
@@ -202,16 +205,46 @@ class Camera:
         f_y = self.M_row2[1]
         return (self.distance_to_target*(y_pixels-c_y))/-f_y
     
+    def calc_x_bias(self):
+        x_coeffs = np.polyfit(self.target_ranges, self.x_bias, deg=2)
+        return np.polyval(x_coeffs, self.distance_to_target)
+    
+    def calc_y_bias(self):
+        y_coeffs = np.polyfit(self.target_ranges, self.y_bias, deg=2)
+        return np.polyval(y_coeffs, self.distance_to_target)
+    
+    # Calculate the minimum number of shots to hit a 12.7 cm (5 in) target with a 95% of at least one hit
+    def calc_shots(self):
+        if self.targets:        
+            CEP = 12.7/2
+            sp_coeffs = np.polyfit(self.target_ranges, self.S_p, deg=2)
+            S_p = np.polyval(sp_coeffs, self.distance_to_target)
+            k = CEP / S_p
+            p = 1 - math.exp(-0.5*(k**2))
+            P_one = 0.95 # Probability of one shot
+            n = math.log(1-P_one) / math.log(1-p)
+            return math.ceil(n)
+        
+        else:
+            return 0
+    
     # Calculate yaw and pitch angles using x, y coordinates (in meters)
     def calc_angles(self, yaw_imu, pitch_imu):
-        x_pixels1 = self.x_pixels_to_si_units(self.targets[0][0])
-        y_pixels1 = self.y_pixels_to_si_units(self.targets[0][1])
-        yaw1 = yaw_imu + math.atan2((x_pixel1s-self.x_bias)/self.distance_to_target)
-        pitch1 = pitch_imu + math.atan2((y_pixels1-self.y_bias)/self.distance_to_target)
+        if self.targets:        
+            x_pixels1 = self.x_pixels_to_si_units(self.targets[0][0])
+            y_pixels1 = self.y_pixels_to_si_units(self.targets[0][1])
+            yaw1 = yaw_imu + math.degrees(math.atan2(x_pixels1-self.calc_x_bias(), self.distance_to_target))
+            pitch1 = pitch_imu + math.degrees(math.atan2(y_pixels1-self.calc_y_bias(), self.distance_to_target))
+            
+            x_pixels2 = self.x_pixels_to_si_units(self.targets[1][0])
+            y_pixels2 = self.y_pixels_to_si_units(self.targets[1][1])
+            yaw2 = yaw_imu + math.degrees(math.atan2(x_pixels2-self.calc_x_bias(), self.distance_to_target))
+            pitch2 = pitch_imu + math.degrees(math.atan2(y_pixels2-self.calc_y_bias(), self.distance_to_target))
+            
+            return yaw1, pitch1, yaw2, pitch2
         
-        x_pixels2 = self.x_pixels_to_si_units(self.targets[1][0])
-        y_pixels2 = self.y_pixels_to_si_units(self.targets[1][1])
-        yaw2 = yaw_imu + math.atan2((x_pixels2-self.x_bias)/self.distance_to_target)
-        pitch2 = pitch_imu + math.atan2((y_pixels2-self.y_bias)/self.distance_to_target)
-        
-        return yaw1, pitch1, yaw2, pitch2
+        else:
+            return 0, 0, 0, 0
+
+    def test(self):
+        return 100
