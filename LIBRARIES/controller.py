@@ -16,7 +16,6 @@ class Controller:
         
     def move_to_angle(self, current_angle, desired_angle):
         if not self.start_time:
-#             print("setting time")
             self.start_time = time.time()
         error = desired_angle - current_angle  # calculate error
         self.previous_errors.append(error)  # add to previous_errors list
@@ -40,9 +39,7 @@ class Controller:
         self.duty_cycle = input_voltage/12  # calculate duty cycle 
         self.motor.move(self.duty_cycle)
 
-#         print(desired_angle, current_angle, error, input_voltage, self.duty_cycle)
         if self.reached_target():
-#             print("REACHED TARGET")
             self.integral = 0  # reset integral
             self.duty_cycle = 0  # reset duty cycle
             self.previous_errors = [10, 10]  # reset previous_errors

@@ -3,7 +3,7 @@
 import serial
 from pynput import keyboard
 
-ser = serial.Serial('COM21', 9600)  # open serial DATA port
+ser = serial.Serial('COM36', 9600)  # open serial DATA port
 
 # Check if arrow keys are pressed and send serial data
 def on_press(key):

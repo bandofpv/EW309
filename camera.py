@@ -123,7 +123,7 @@ class Camera:
                     out_img = detect.CPUinference()
                     
                     if detect.nn:
-                        print('\n')
+#                         print('\n')
 #                         print(*detect.nn, sep='\n')
                         self.find_targets(detect.nn)
                         
@@ -193,13 +193,13 @@ class Camera:
         if len(self.targets) > 2:
             print("Detected more than two targets!!!")
         
-    # Convert x_pixels to meters in image frame
+    # Convert x_pixels to cm in image frame
     def x_pixels_to_si_units(self, x_pixels):
         c_x = self.M_row1[2]
         f_x = self.M_row1[0]
         return (self.distance_to_target*(x_pixels-c_x))/f_x
     
-    # Convert y_pixels to meters in image frame
+    # Convert y_pixels to cm in image frame
     def y_pixels_to_si_units(self, y_pixels):
         c_y = self.M_row2[2]
         f_y = self.M_row2[1]

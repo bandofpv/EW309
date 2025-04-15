@@ -5,7 +5,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 target_ranges = [304.8, 457.2, 609.6]  # cm
-x_bias = [-9.75, -8.341666666666667, -15.17]  # cm
+x_bias = [-9.75, -8.34, -15.17]  # cm
 y_bias = [-26.08, -46.03, -74.35]  # cm
 S_p = [3.41, 5.78, 7.26]  # cm
 CEP_50 = [4.01, 6.81, 8.55]  # cm
