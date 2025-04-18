@@ -17,15 +17,15 @@ i2c1 = machine.I2C(1, scl=machine.Pin(3), sda=machine.Pin(2))
 imu = BNO055(i2c1)
 
 # Create Motor instances
-yaw_motor = Motor(10, 9)
+yaw_motor = Motor(9, 10)
 pitch_motor = Motor(13, 12)
 
 # Create Fire System instance
 fire_system = Fire(sampling_rate)
 
 # Initialize controllers
-yaw_control = Controller(yaw_motor, P=0.8, I=3.3, sampling_rate=sampling_rate, deadzone=[0.2,-0.2])
-pitch_control = Controller(pitch_motor, P=0.9, I=3.3, sampling_rate=sampling_rate, deadzone=[0.21,-0.19])
+yaw_control = Controller(yaw_motor, P=0.09, I=0.4, sampling_rate=sampling_rate, deadzone=[0.21,-0.21])
+pitch_control = Controller(pitch_motor, P=0.09, I=0.38, sampling_rate=sampling_rate, deadzone=[0.19,-0.19])
 
 const_speed = 0.6  # set motor duty cycle speed
 
@@ -128,16 +128,17 @@ while True:
         if yaw_control.move_to_angle(wrap2pi(yaw), yaw1):
             yaw_motor.move(0)
             move_yaw1 = False
-#             print(f"Yaw Error: {yaw1-wrap2pi(yaw)}")
-            print(f"Yaw Error: {check_error(yaw1,wrap2pi(yaw))}")
+            print(f"Yaw Error: {yaw1-wrap2pi(yaw)}")
+#             print(f"Yaw Error: {check_error(yaw1,wrap2pi(yaw))}")
             
     if move_pitch1:
         if pitch_control.move_to_angle(pitch, pitch1) and not move_yaw1:
+#         if pitch_control.move_to_angle(pitch, pitch1):
             pitch_motor.move(0)
             move_pitch1 = False
             shoot1 = True
-#             print(f"Pitch Error: {pitch1-pitch}")
-            print(f"Pitch Error: {check_error(pitch1,pitch)}")
+            print(f"Pitch Error: {pitch1-pitch}")
+#             print(f"Pitch Error: {check_error(pitch1,pitch)}")
 
     if shoot1:
         fire_system.fire_balls()
@@ -146,22 +147,23 @@ while True:
             shoot1 = False
             move_yaw2 = True
             move_pitch2 = True
-            print("Shot Count: {fire_system.shot_count}")
+            print(f"Shot Count: {fire_system.shot_count}")
             
     if move_yaw2:
         if yaw_control.move_to_angle(wrap2pi(yaw), yaw2):
             yaw_motor.move(0)
             move_yaw2 = False
-#             print(f"Yaw Error: {yaw2-wrap2pi(yaw)}")
-            print(f"Yaw Error: {check_error(yaw2,wrap2pi(yaw))}")
+            print(f"Yaw Error: {yaw2-wrap2pi(yaw)}")
+#             print(f"Yaw Error: {check_error(yaw2,wrap2pi(yaw))}")
             
     if move_pitch2:
         if pitch_control.move_to_angle(pitch, pitch2) and not move_yaw2:
+#         if pitch_control.move_to_angle(pitch, pitch2):
             pitch_motor.move(0)
             move_pitch2 = False
             shoot2 = True
-#             print(f"Pitch Error: {pitch2-pitch}")
-            print(f"Pitch Error: {check_error(pitch2,pitch)}")
+            print(f"Pitch Error: {pitch2-pitch}")
+#             print(f"Pitch Error: {check_error(pitch2,pitch)}")
             
     if shoot2:
         fire_system.fire_balls()
@@ -170,7 +172,7 @@ while True:
             yaw_motor.move(0)
             fire_system.motor1.value(0)
             fire_system.motor2.value(0)
-            print("Shot Count: {fire_system.shot_count}")
+            print(f"Shot Count: {fire_system.shot_count}")
             break
                 
     time.sleep(1/sampling_rate)  # control loop rate

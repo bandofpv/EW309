@@ -195,13 +195,15 @@ class Camera:
         
     # Convert x_pixels to cm in image frame
     def x_pixels_to_si_units(self, x_pixels):
-        c_x = self.M_row1[2]
+#         c_x = self.M_row1[2]
+        c_x = self.video_size[0]/2
         f_x = self.M_row1[0]
         return (self.distance_to_target*(x_pixels-c_x))/f_x
     
     # Convert y_pixels to cm in image frame
     def y_pixels_to_si_units(self, y_pixels):
-        c_y = self.M_row2[2]
+#         c_y = self.M_row2[2]
+        c_y = self.video_size[1]/2
         f_y = self.M_row2[1]
         return (self.distance_to_target*(y_pixels-c_y))/-f_y
     

@@ -13,14 +13,14 @@ import matplotlib.pyplot as plt
 distance_to_target = 457.2  # cm
 target_color = 'orange'
 target_ranges = [304.8, 457.2, 609.6]  # cm
-x_bias = [-9.75, -7.59, -15.17]  # cm
-y_bias = [-26.08, -46.03, -74.35]  # cm
+x_bias = [-9.75, -11.59, -15.17]  # cm
+y_bias = [-26.08, -45.03, -74.35]  # cm
 S_p = [3.41, 5.78, 7.26]  # cm
 fps = 30
 record = True
 sampling_rate = 60  # Hz
 
-ser = serial.Serial('COM36', 9600)  # open serial DATA port
+ser = serial.Serial('COM21', 9600)  # open serial DATA port
 
 yaw_data = []
 pitch_data = []
