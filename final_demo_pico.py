@@ -10,7 +10,7 @@ from controller import Controller
 from fire import Fire
 
 tty = ttyacm.open(1)  # open serial DATA port
-sampling_rate = 60  # Hz
+sampling_rate = 80  # Hz
 
 # Define SCL & SDA pins for BNO055 IMU
 i2c1 = machine.I2C(1, scl=machine.Pin(3), sda=machine.Pin(2))
@@ -24,8 +24,8 @@ pitch_motor = Motor(13, 12)
 fire_system = Fire(sampling_rate)
 
 # Initialize controllers
-yaw_control = Controller(yaw_motor, P=0.09, I=0.4, sampling_rate=sampling_rate, deadzone=[0.21,-0.21])
-pitch_control = Controller(pitch_motor, P=0.09, I=0.38, sampling_rate=sampling_rate, deadzone=[0.19,-0.19])
+yaw_control = Controller(yaw_motor, P=0.12, I=0.5, sampling_rate=sampling_rate, deadzone=[0.2,-0.2])
+pitch_control = Controller(pitch_motor, P=0.12, I=0.52, sampling_rate=sampling_rate, deadzone=[0.19,-0.19])
 
 const_speed = 0.6  # set motor duty cycle speed
 

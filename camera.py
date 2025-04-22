@@ -209,11 +209,13 @@ class Camera:
     
     def calc_x_bias(self):
         x_coeffs = np.polyfit(self.target_ranges, self.x_bias, deg=2)
-        return np.polyval(x_coeffs, self.distance_to_target)
+#         return np.polyval(x_coeffs, self.distance_to_target)
+        return -11
     
     def calc_y_bias(self):
         y_coeffs = np.polyfit(self.target_ranges, self.y_bias, deg=2)
-        return np.polyval(y_coeffs, self.distance_to_target)
+#         return np.polyval(y_coeffs, self.distance_to_target)
+        return -32.5
     
     # Calculate the minimum number of shots to hit a 12.7 cm (5 in) target with a 95% of at least one hit
     def calc_shots(self):
@@ -247,6 +249,3 @@ class Camera:
         
         else:
             return 0, 0, 0, 0
-
-    def test(self):
-        return 100
