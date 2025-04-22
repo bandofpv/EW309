@@ -9,7 +9,7 @@ x_bias = [-9.75, -7.59, -15.17]  # cm
 y_bias = [-26.08, -46.03, -74.35]  # cm
 S_p = [3.41, 5.78, 7.26]  # cm
 
-# Start video stream on seperate thread
+# Start video stream on separate thread
 # 10 ft: 304.8 15 ft: 457.2 20 ft: 609.6
 oakCamera = Camera(457.2, 'orange', target_ranges, x_bias, y_bias, S_p, 30, True)  # start camera instance
 camera_thread = threading.Thread(target=oakCamera.stream_video)
