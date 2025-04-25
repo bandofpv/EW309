@@ -1,13 +1,10 @@
-# system_pc.py
+# final_demo_pc.py
 
 import time
 import serial
 import keyboard
 import threading
-import numpy as np
-import pandas as pd
 from camera import Camera
-import matplotlib.pyplot as plt
 
 # 10 ft: 304.8 15 ft: 457.2 20 ft: 609.6
 distance_to_target = 457.2  # cm
@@ -100,31 +97,3 @@ while True:
 stop_event.set()  # stop serial_read thread
 serial_thread.join()
 camera_thread.join()
-
-# Subplot for Position vs. Time
-plt.figure(figsize=(10, 5))
-plt.subplot(2, 1, 1)
-plt.plot(time_data, yaw_data, marker='.', label='Yaw')
-plt.plot(time_data, pitch_data, marker='.', label='Pitch')
-plt.title("Position vs. Time")
-plt.xlabel("Time (seconds)")
-plt.ylabel("Position (degrees)")
-plt.grid(True)
-plt.legend()
-
-# Subplot for Angular Velocity
-plt.subplot(2, 1, 2)
-plt.plot(time_data, yaw_velocity_data, marker='.', label='Yaw')
-plt.plot(time_data, pitch_velocity_data, marker='.', label='Pitch')
-plt.title("Angular Velocity vs. Time")
-plt.xlabel("Time (seconds)")
-plt.ylabel("Angular Velocity (degrees/sec)")
-plt.grid(True)
-plt.legend( )
- 
-# Display plot
-plt.tight_layout()
-plt.show()
-
-df = pd.DataFrame({'time': time_data, 'yaw': yaw_data, 'pitch': pitch_data, 'yaw_velocity': yaw_velocity_data, 'pitch_velocity': pitch_velocity_data})
-df.to_csv("data.csv")

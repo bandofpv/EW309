@@ -1,13 +1,14 @@
-# system_pico.py
+# final_demo_pico.py
 
 import re
 import time
 import ttyacm
 import _thread
 from bno055 import *
+from fire import Fire
 from motor import Motor
 from controller import Controller
-from fire import Fire
+
 
 tty = ttyacm.open(1)  # open serial DATA port
 sampling_rate = 80  # Hz
