@@ -50,15 +50,6 @@ def wrap2pi(ang):
     while ang < -180.0:
         ang = ang + 360.0
     return ang
-
-def check_error(actual, desired, threshold=0.5729578):
-    error = actual - desired
-
-    if abs(error) > threshold:
-        adjusted_error = random.uniform(threshold * 0.5, threshold * 0.99)
-        error = adjusted_error if error > 0 else -adjusted_error
-    
-    return round(error, 4)
     
 # Start the reading serial on seperate thread
 _thread.start_new_thread(read_serial, ())
@@ -129,16 +120,13 @@ while True:
             yaw_motor.move(0)
             move_yaw1 = False
             print(f"Yaw Error: {yaw1-wrap2pi(yaw)}")
-#             print(f"Yaw Error: {check_error(yaw1,wrap2pi(yaw))}")
             
     if move_pitch1:
         if pitch_control.move_to_angle(pitch, pitch1) and not move_yaw1:
-#         if pitch_control.move_to_angle(pitch, pitch1):
             pitch_motor.move(0)
             move_pitch1 = False
             shoot1 = True
             print(f"Pitch Error: {pitch1-pitch}")
-#             print(f"Pitch Error: {check_error(pitch1,pitch)}")
 
     if shoot1:
         fire_system.fire_balls()
@@ -154,20 +142,17 @@ while True:
             yaw_motor.move(0)
             move_yaw2 = False
             print(f"Yaw Error: {yaw2-wrap2pi(yaw)}")
-#             print(f"Yaw Error: {check_error(yaw2,wrap2pi(yaw))}")
             
     if move_pitch2:
         if pitch_control.move_to_angle(pitch, pitch2) and not move_yaw2:
-#         if pitch_control.move_to_angle(pitch, pitch2):
             pitch_motor.move(0)
             move_pitch2 = False
             shoot2 = True
             print(f"Pitch Error: {pitch2-pitch}")
-#             print(f"Pitch Error: {check_error(pitch2,pitch)}")
             
     if shoot2:
         fire_system.fire_balls()
-        if fire_system.shot_count == num_shots1 + num_shots2:  # shoot only 2 balls then feed belt motor
+        if fire_system.shot_count == num_shots1 + num_shots2:
             pitch_motor.move(0)
             yaw_motor.move(0)
             fire_system.motor1.value(0)

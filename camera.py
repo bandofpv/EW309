@@ -104,7 +104,6 @@ class Camera:
 
             # Create output window
             cv2.namedWindow(self.windowName, cv2.WINDOW_NORMAL)
-#             cv2.resizeWindow(self.windowName, int(self.video_size[0]), int(self.video_size[1]))  # resize to output size
 
             # Instantiate YOLOv8 object
             detect = yolo.YOLOv8_11(self.path_to_model, self.path_to_yaml, [], self.conf_thres, self.iou_thres)
@@ -123,12 +122,10 @@ class Camera:
                     out_img = detect.CPUinference()
                     
                     if detect.nn:
-#                         print('\n')
-#                         print(*detect.nn, sep='\n')
+
                         self.find_targets(detect.nn)
                         
                     if self.targets:
-#                         print(self.targets)
                         for target in self.targets:
                             cv2.circle(out_img, (int(target[0]),int(target[1])), 4, (0, 0, 255), -1)
 
@@ -171,7 +168,6 @@ class Camera:
     def grab_snapshot(self, frame):
         image_window_name = f"Snapshot {datetime.datetime.now().strftime('%m_%d_%H%M%S')}"
         cv2.namedWindow(image_window_name, cv2.WINDOW_NORMAL)
-#         cv2.resizeWindow(image_window_name, int(self.video_size[0]), int(self.video_size[1])) 
         cv2.imshow(image_window_name, frame)
     
     # Calculate height of targets
@@ -195,27 +191,28 @@ class Camera:
         
     # Convert x_pixels to cm in image frame
     def x_pixels_to_si_units(self, x_pixels):
-#         c_x = self.M_row1[2]
         c_x = self.video_size[0]/2
         f_x = self.M_row1[0]
         return (self.distance_to_target*(x_pixels-c_x))/f_x
     
     # Convert y_pixels to cm in image frame
     def y_pixels_to_si_units(self, y_pixels):
-#         c_y = self.M_row2[2]
         c_y = self.video_size[1]/2
         f_y = self.M_row2[1]
         return (self.distance_to_target*(y_pixels-c_y))/-f_y
     
+    # Calculate x-bias given distance to target
     def calc_x_bias(self):
+        # Notes:
+        # If hitting left --> make more negative
+        # If hitting right --> make more positive
         x_coeffs = np.polyfit(self.target_ranges, self.x_bias, deg=2)
-#         return np.polyval(x_coeffs, self.distance_to_target)
-        return -11
+        return np.polyval(x_coeffs, self.distance_to_target)
     
+    # Calculate y-bias given distance to target
     def calc_y_bias(self):
         y_coeffs = np.polyfit(self.target_ranges, self.y_bias, deg=2)
-#         return np.polyval(y_coeffs, self.distance_to_target)
-        return -32.5
+        return np.polyval(y_coeffs, self.distance_to_target)
     
     # Calculate the minimum number of shots to hit a 12.7 cm (5 in) target with a 95% of at least one hit
     def calc_shots(self):

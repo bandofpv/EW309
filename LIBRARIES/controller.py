@@ -10,7 +10,6 @@ class Controller:
         self.time_step = 1/sampling_rate
         self.integral = 0  # integral of error
         self.deadzone = deadzone  # deadzone threshold
-        self.previous_errors = [10, 10]
         self.current_error = 10
         self.previous_error = 10
         self.start_time = None
