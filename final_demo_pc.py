@@ -8,7 +8,7 @@ from camera import Camera
 
 # 10 ft: 304.8 15 ft: 457.2 20 ft: 609.6
 distance_to_target = 457.2  # cm
-target_color = 'red'
+target_color = 'orange'
 target_ranges = [304.8, 457.2, 609.6]  # cm
 x_bias = [-9.75, -11.59, -15.17]  # cm
 y_bias = [-26.08, -45.03, -74.35]  # cm

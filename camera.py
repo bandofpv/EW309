@@ -132,8 +132,6 @@ class Camera:
                     # Draw crosshairs
                     cv2.line(out_img, (0, int(self.video_size[1]/2)), (self.video_size[0],int(self.video_size[1]/2)), (0, 255, 0), 2)
                     cv2.line(out_img, (int(self.video_size[0]/2), 0), (int(self.video_size[0]/2),self.video_size[1]), (0, 255, 0), 2)
-                    cv2.line(out_img, (0, int(self.M_row2[2])), (self.video_size[0],int(self.M_row2[2])), (255, 0, 0), 2)
-                    cv2.line(out_img, (int(self.M_row1[2]), 0), (int(self.M_row1[2]),self.video_size[1]), (255, 0, 0), 2)
 
                     # Display 
                     cv2.imshow(self.windowName, out_img)
